@@ -1,0 +1,2174 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<book xmlns="http://docbook.org/ns/docbook" version="5.0">
+<info xml:id="bookinfo">
+	<title>Building SoHo storage with ZFS on Linux</title>
+	<authorgroup>
+		<author>
+			<personname>
+				<firstname>Damian</firstname>
+				<surname>Wojslaw</surname>
+			</personname>
+		</author>
+		<editor>
+			<personname>
+				<firstname>Peter</firstname>
+				<surname>Turner</surname>
+			</personname>
+		</editor>
+	</authorgroup>
+
+<bibliorelation type="isversionof" class="uri">https://completelyfake.eu/sohozfs</bibliorelation>
+
+<releaseinfo>Copyright Damian Wojslaw. All Rights Reserved
+</releaseinfo>
+
+<pubdate>February 2016</pubdate>
+
+<publisher>
+	<publishername>Damian Wojsław</publishername>
+</publisher>
+
+<copyright>
+	<year>2016</year>
+	<holder>Damian Wojslaw</holder>
+</copyright>
+
+<abstract>
+	<para>
+      This is guide intended for everyone setting up their home and small office (SoHo) storage and would want to use ZFS on Linux for that purpose.
+    </para>
+</abstract>
+<cover>
+	<para role="tagline">The guide to your SoHo ZFS on Linux storage</para>
+	<mediaobject>
+		<imageobject>
+			<imagedata fileref="gfx/IMAG0317.jpg">
+			</imagedata>
+		</imageobject>
+	</mediaobject>
+</cover>
+</info>
+
+<preface xml:id="preface">
+	<title>Preface</title>
+	<para>The <citetitle>Building SoHo storage with ZFS on Linux"</citetitle> is an on hands guide to planning, deploying and maintaining Small Office Home Office storage system using ZFS. While ZFS was first release for Sun Solaris (and now Oracle Solaris) operating systems, open source fork has been created. All open source ZFS implementations, that means <link href="https://www.illumos.org/">illumos</link>, <link href="http://www.freebsd.org">FreeBSD</link> and <link href="http://www.kernel.org">Linux</link>, are cooperating under umbrella of <link href="http://www.open-zfs.org">OpenZFS project</link>. </para>
+	<note>
+		<para>While my main experience covers large enterprise ZFS storage arrays working under illumos control, FreeBSD and Linux have better hardware drivers support for commodity hardware. I will thus mostly cover the two. For Linux CentOS Linux and Ubuntu Server are covered. As a side note: Any step done on CentOS should be applicable straight to RedHat Enterprise Linux. If you wish to have a Linux distribution with paid Support, use Red Hat or Ubuntu.</para>
+	</note>
+	<para>
+		It all started as an exercise and as a way to check how much do I really know about ZFS. I wanted to go through a book writing process from a start to an end checking along how much I'd really need to learn to close gaps.
+	</para>
+	<sect1>
+	<title xml:id="preface-2">Who Should Use This Book</title>
+	<para>
+		This guide is intended for everyone who would like to work on setting up their SoHo NAS and consider or are committed to ZFS as their choice. Prior operating system administration experience is expected. Relative ease of use of command line (bash, ssh etc), installing packages for given operating system and basic troubleshooting are needed and will not be covered in this guide. A DIY mindset is expected from the reader, as lots of things will need manual labor: from system and packages installation, to monitoring set up.</para>
+	</sect1>
+	<sect1 xml:id="preface-3"><title>How to use this book?</title>
+	<para>
+		While this guide is trying to progress naturally from theory and basics through more technical and real life knowledge to full hands on experience, best way to use it depends on yourself. I would recommend reding it at least twice before you go and buy hardware or refit existing hardware that you already own. Later on, you may wish to go through whole book again, as you progress towards storage deployment, or skip to chapters of interest. Remember though, successful ZFS administration relies on understanding its principles, so looking back at ZFS Overview is recommended any time you fell you may have missed something.
+	</para>
+	</sect1>
+	<sect1 xml:id="preface-4"><title>Acknowledgments</title>
+	<para>
+		There are numerous people that had direct or indirect influence on this guide. OpenSolaris and later illumos and OpenZFS community members, without whom I'd never have a privilege to work with fantastic technology. Polish OpenSolaris User Group, which I have led for few years, undertook great effort of translating original ZFS Administration Guide, in which I took part. Nexenta Systems, Inc., where I have finally installed and serviced many ZFS storage arrays.
+	</para>
+	<para>
+		The people that I would like to thanks personally are (in no specific order): Dariusz Ankowski, Pete Turner, Matt Green, Andy Bennett, Daniel Borek, Jason Banham, Tim Foster, Darryl Clark, Maciej Jan Broniarz, Claudia Hildebrandt, Ryuji Masuda, Robert Mustacchi, Matt Ahrens, Michał Nowak. They may even not know it, but almost all my ZFS-foo I've learnt from them.
+	</para>
+	</sect1>
+	<sect1 xml:id="preface-6"><title>Typographic conventions</title>
+		<para>I use various typographic notations through this book to hint on a special meaning. Explanation in the table below.</para>
+		<table frame="topbot">
+			<title>Typographic Conventions</title>
+			<tgroup cols="3" colsep="0" rowsep="0"><colspec colwidth="80*"/><colspec colwidth="179*"/><colspec colwidth="137*"/>
+			<thead>
+				<row rowsep="1">
+					<entry align="left"><para>Font</para></entry>
+					<entry align="left"><para>Meaning</para></entry>
+					<entry align="left"><para>Example</para></entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><para><literal>AaBbCc123</literal></para></entry>
+					<entry><para>Commands, filenames, directories, whenever they are not a part of larger listing. </para></entry>
+					<entry><para>Edit the <filename>zfs-sudoers</filename> file. </para><para>Use <userinput><command>sudo zfs list</command> <option>-t all</option></userinput> to see all filesystems and snapshots.</para></entry>
+				</row>
+				<row>
+					<entry><para><userinput>AaBbCc123</userinput></para></entry>
+					<entry><para>The commands or input you are supposed to provide to the computer.</para></entry>
+					<entry><para><computeroutput>computer%</computeroutput> <userinput>sudo zfs list</userinput></para></entry>
+				</row>
+				<row>
+					<entry><para><replaceable>aabbcc123</replaceable></para></entry><entry><para>Placeholder: whenever you need to replace whatever I typed with your real value</para></entry>
+					<entry><para>To create a single disk pool type in <command>sudo zpool create datapool </command> <replaceable>/dev/sdb</replaceable>.</para></entry>
+				</row>
+				<row>
+					<entry><para><emphasis>AaBbCc123</emphasis></para></entry>
+					<entry><para>Any text I feel you should pay special attention to.</para></entry>
+					<entry><para>Look this command up in <citetitle>zpool man page</citetitle>. </para>
+					<para>An <emphasis>l2arc</emphasis> device would, in most cases, greatly speed up your read performance.</para>
+					</entry>
+				</row>
+		</tbody>
+		</tgroup>
+		</table>
+	</sect1>
+	<sect1 xml:id="preface-7"><title>About me</title>
+	<para>
+		Long time illumos and ZFS enthusiast, I've worked with ZFS storage from few hundred gigabytes up to hundreds of terabytes capacity. For several years a Field Engineer at Nexenta Systems, Inc., a Software Defined Storage company, installed and supported large number of company's customers. I have been an active member of OpenSolaris and later on illumos communities, with special interest in ZFS, and later OpenZFS. I started working professionally with Linuxes in 1999 and since then used Linuxes and Unices exclusively on my servers and desktops.
+	</para>
+	</sect1>
+	<sect1 xml:id="preface-8">
+		<title>How this book is organized?</title>
+		<para>The following table describes the chapters in this book.</para>
+		<informaltable frame="topbot">
+			<tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="29.96*"/>
+				<colspec colwidth="70.04*"/>
+				<thead>
+					<row rowsep="1">
+						<entry><para>Chapter</para></entry>
+						<entry><para>Description</para></entry>
+					</row>
+			<p></p>
+				</thead>
+				<tbody>
+					<row>
+						<entry><para><xref linkend="dyi" /></para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="zfsover" /></para></entry>
+						<entry><para>Quick introduction to ZFS. All other things you may want to know are already on the net.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="planning" /></para></entry>
+						<entry><para>Questions you need to ask yourself, before buying hardware.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="installation" /></para></entry>
+						<entry><para>You've chosen the hardware. Now install the system and packages.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="setup" /></para></entry>
+						<entry><para>Create the pool and filesystems.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="advsetup" /></para></entry>
+						<entry><para>Quotas, reservations, snapshots, rollbacks, ACL-s.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="sharing" /></para></entry>
+						<entry><para>Sharing the storage with other systems using CIFS and/or NFS.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="accounting" /></para></entry>
+						<entry><para>Space accounting. Tricky side of ZFS.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="monitoring" /></para></entry>
+						<entry><para>Keep track of your system and pool.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="maintenance" /></para></entry>
+						<entry><para>Maintaining the storage. Expanding the pool. Finding and replacing failed disks.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="tracing" /></para></entry>
+						<entry><para>Determining root cause for pool issues.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="reading" /></para></entry>
+						<entry><para>Additional sources of ZFS information.</para></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+</preface>
+
+
+<chapter xml:id="dyi"><title>Why Do It Yourself?</title>
+	<para>
+		The great question you may be asking yourself is, what is <indexterm><primary>DIY</primary></indexterm> and why should you do it? DIY is an abbreviation of <indexterm><primary>DIY</primary><secondary>Do It Yourself</secondary></indexterm> Do It Yourself. It is probably one of the longest living games of humankind - creating something by your own. While it's not exactly everybody's the way to about everything, there's a certain pride in having done certain activities all by yourself and that might be your first incentive.
+	</para>
+	<para>
+		Secondly, if you are a person that likes to tinker with things and IT is of special interest to you, storage world is a very interesting are to know. And while big storage arrays may be a too big burden, a small, single server storage system is exactly the thing that you can learn exciting side of data serving. If you, like me, feel exited about running Linux from Scratch as your workstation system, if you, like me, like to compile your Linux kernel or update and rebuild your FreeBSD system quite often, you may then find putting together your SoHo storage array a great experience.
+	</para>
+	<para>
+		Thirdly, even though there are great free solutions out there that you may use, they will not teach you all the possibilities and intricacies of using ZFS system. Actually, single node SoHo storage is <emphasis>the system</emphasis> to learn all that there is and have everything tailored exactly to your needs and expectations. With larger scale, with third party products, you will need to compromise with someone else's vision of how storage should be done.
+	</para>
+</chapter>
+
+
+<chapter xml:id="zfsover"><title>ZFS overview</title>
+<sect1 xml:id="zfsover-1"><title>Why ZFS?</title>
+	<para>
+		There are many storage solutions out in the wild, for both large enterprises and SoHo environments. It is outside the scope of this guide to cover them, or even enumerate them. You can choose open source self service product or a commercial one with full paid support. Some of them build on ZFS filesystem, first introduced in Sun Solaris and now part of Oracle Solaris operating system. Open Source ones, the likes of FreeNAS, and commercial, like Nexenta.
+	</para>
+	<para>
+		You may wonder, why should you use <indexterm><primary>ZFS</primary></indexterm> at all. What is so special about the filesystem? There are many places on the Internet that explain that in much detail, so lets keep it short. </para>
+		<itemizedlist>
+			<listitem><para>First of all, most important aspect from this guide's point of view, is incredibly simplified administration. Thanks to merging volume manager, raid and file system are one, there are only two commands you need use to create volumes, redundancy levels, filesystems, compression, mountpoints etc. </para></listitem>
+			<listitem><para>Second reason is long proven stability track. ZFS has been first publicly released in 2005 and since then countless storage solutions have been deployed based on it. I've seen hundreds of large ZFS storages in big enterprises and I'm confident the number is hundreds if not thousands of thousand more. I've also seen small, SoHo ZFS arrays and set up some of them myself. Both worlds have witnessed great stability and scalability of the new filesystem. </para></listitem>
+			<listitem><para> ZFS was designed with data integrity in mind. It comes with data integrity check, metadata checksumming, data failure detection (and in case of redundant setup possibly fixing it), automatic replacement of failed devices. </para></listitem>
+			<listitem><para> ZFS scales well, with ability to add new devices, control cache and more.</para></listitem>
+	</itemizedlist>
+	<para>
+		<indexterm><primary>btrfs</primary></indexterm>
+		<indexterm><primary>GlusterFS</primary></indexterm>
+		<indexterm><primary>Ceph FS</primary></indexterm>
+		A good question you may ask is, why not btrfs? It was being written as an answer to and natural evolution of ZFS. All the architectural disadvantages are being taken care of. So why not got for it? Why not ceph or glusterfs, for that matter?
+	</para>
+	<para>
+		For me it is simple. I don't know btrfs or the other two that well, as of yet. What's more important, I've not seen enough of btrfs in the field to answer questions about downsides, and lets not be naive, it has to have some. So while I am looking at them with interest, I am not yet qualified. Also, objectively, btrfs has not been tested that well and throughout, while ZFS has proven itself in countless commercial and non-commercial setups. Ceph and glusterfs are also filesystems for different scenarios. Their use cases are for distributed storage. It is possible to set up single node install for them, it's not where their abilities will shine. 
+	</para>
+	<para><indexterm><primary>LVM</primary></indexterm>
+		For a full appreciation of how ZFS allows for greater ease of administration and flexibility, lets compare a similar mirrored setup with LVM and ZFS. LVM is now able to manage raid sets itself, thus removing the need to set <command>mdraid</command>/<command>dmraid</command> set and greatly simplifying the configuration. Still, ZFS lets you do it even easier. 
+		<note>
+			This is the only place in this book where I am going to compare ZFS with other storage solutions. If you want to research differences from other storage filesystems, there are enough out there, in the wild.
+		</note>
+	</para>
+	<para><indexterm><primary>LVM</primary><secondary>physical volume</secondary></indexterm>
+		<indexterm><primary>LVM</primary><secondary>physical volume group</secondary></indexterm>
+		<indexterm><primary>LVM</primary><secondary>logical volume</secondary></indexterm>
+		This guide is not focused on LVM, some information however needs to be presented. Logical Volume Manager needs three set of configuration elements it is going to work on. Physical Volumes (pv) - translating in our example to disks, Volume Groups (pvg) that consist of pvs and Logical Volumes (lv) which are a virtual device set on top of pvgs.
+	</para>
+	<para>
+		Creating a Logical Volume consists of three steps:
+		<itemizedlist>
+			<listitem><para>Create and label disk partitions to be used by LVM</para></listitem>
+			<listitem><para>Create Volume Group and add pvs there</para></listitem>
+			<listitem><para>Create lv on top of pvs within pvg</para></listitem>
+		</itemizedlist>
+	</para>
+	<para>
+		Given four drives: <literal>/dev/sdb</literal>, <literal>/dev/sdc</literal>, <literal>/dev/sdd</literal> and <literal>/dev/sde</literal>, first step is presented below. First recommended command removes partition table from devices:
+	<programlisting>	
+	<computeroutput>
+	[root@localhost ~]#</computeroutput> <userinput>dd if=/dev/zero of=/dev/sdb \
+		bs=512 count=1</userinput>
+	<computeroutput>
+	1+0 records in
+	1+0 records out
+	512 bytes (512 B) copied, 0.0423262 s, 12.1 kB/s
+
+	[root@localhost ~]#</computeroutput> <userinput>dd if=/dev/zero of=/dev/sdc \
+		bs=512 count=1</userinput>
+	<computeroutput>
+	1+0 records in
+	1+0 records out
+	512 bytes (512 B) copied, 0.00209745 s, 244 kB/s
+
+	[root@localhost ~]#</computeroutput> <userinput>dd if=/dev/zero of=/dev/sdd \
+		bs=512 count=1</userinput>
+	<computeroutput>
+	1+0 records in
+	1+0 records out
+	512 bytes (512 B) copied, 0.00207601 s, 247 kB/s
+
+	[root@localhost ~]#</computeroutput> <userinput>dd if=/dev/zero of=/dev/sde \
+		bs=512 count=1</userinput>
+	<computeroutput>
+	1+0 records in
+	1+0 records out
+	512 bytes (512 B) copied, 0.00181138 s, 283 kB/s
+	</computeroutput>
+	</programlisting>
+	<indexterm><primary>LVM</primary><secondary>pvcreate</secondary></indexterm>
+		Next, <command>pvcreate</command> is used to label disks as physical devices:
+	
+		<programlisting>
+	<computeroutput>	
+	[root@localhost ~]#</computeroutput> <userinput>pvcreate /dev/sdb \
+		/dev/sdc /dev/sdd /dev/sde</userinput>
+	<computeroutput>
+  	Physical volume "/dev/sdb" successfully created
+  	Physical volume "/dev/sdc" successfully created
+  	Physical volume "/dev/sdd" successfully created
+  	Physical volume "/dev/sde" successfully created
+	</computeroutput>	
+</programlisting>
+
+	<indexterm><primary>LVM</primary><secondary>vgcreate</secondary></indexterm>
+		Next step creates logical volume group:
+
+		<programlisting>
+	<computeroutput>	
+	[root@localhost ~]#</computeroutput> <userinput>vgcreate vg1 /dev/sdb \
+		/dev/sdc /dev/sdd /dev/sde</userinput>
+	<computeroutput>
+  	Volume group "vg1" successfully created
+	</computeroutput>
+</programlisting>
+
+	<indexterm><primary>LVM</primary><secondary>vgdisplay</secondary></indexterm>
+		We can now confirm that the group was created and, in fact, consists of the four physical devices we intended:
+
+<programlisting>
+	<computeroutput>
+	[root@localhost ~]#</computeroutput> <userinput>vgdisplay vg1</userinput>
+	<computeroutput>
+  	--- Volume group ---
+  	VG Name               vg1
+	System ID             
+	Format                lvm2
+	Metadata Areas        4
+	Metadata Sequence No  1
+	VG Access             read/write
+	VG Status             resizable
+	MAX LV                0
+	Cur LV                0
+	Open LV               0
+	Max PV                0
+	Cur PV                4
+	Act PV                4
+	VG Size               7.98 GiB
+	PE Size               4.00 MiB
+	Total PE              2044
+	Alloc PE / Size       0 / 0   
+	Free  PE / Size       2044 / 7.98 GiB
+	VG UUID               QwkE3X-H1jO-gzAZ-JXAF-FPGQ-0D43-C06JyD
+</computeroutput>
+		</programlisting>
+
+	<indexterm><primary>LVM</primary><secondary>lvcreate</secondary></indexterm>
+	Next step involves actually creating the RAID logical volume and checking that it actually exists:
+
+	<programlisting>
+		<computeroutput>
+	[root@localhost ~]#</computeroutput> <userinput>lvcreate -L 4000M -m1 \
+		-n mirrorlv vg1</userinput>
+	<computeroutput>
+  	Logical volume "mirrorlv" created.
+
+	[root@localhost ~]# lvdisplay vg1
+  	--- Logical volume ---
+  	LV Path                /dev/vg1/mirrorlv
+	LV Name                mirrorlv
+	VG Name                vg1
+	LV UUID                gVQoik-R1Om-bzDG-GgVy-NA3T-SgCd-80s5RU
+	LV Write Access        read/write
+	LV Creation host, time localhost.localdomain, 2016-02-12 13:05:50 
+	LV Status              available
+	# open                 0
+	LV Size                3.91 GiB
+	Current LE             1000
+	Mirrored volumes       2
+	Segments               1
+	Allocation             inherit
+	Read ahead sectors     auto
+	- currently set to     8192
+	Block device           253:6
+</computeroutput>
+	</programlisting>
+	</para>
+	<para>
+
+		<indexterm><primary>mkfs.ext4</primary></indexterm>
+		Now, this is not all. Before being able to mount the volume, you first need to create a filesystem on it:
+
+		<programlisting>
+			<computeroutput>
+	[root@localhost ~]#</computeroutput> <userinput>mkfs.ext4 /dev/vg1/mirrorlv</userinput>
+	<computeroutput>
+	mke2fs 1.42.9 (28-Dec-2013)
+	Filesystem label=
+	OS type: Linux
+	Block size=4096 (log=2)
+	Fragment size=4096 (log=2)
+	Stride=0 blocks, Stripe width=0 blocks
+	256000 inodes, 1024000 blocks
+	51200 blocks (5.00%) reserved for the super user
+	First data block=0
+	Maximum filesystem blocks=1048576000
+	32 block groups
+	32768 blocks per group, 32768 fragments per group
+	8000 inodes per group
+	Superblock backups stored on blocks: 
+		32768, 98304, 163840, 229376, 294912, 819200, 884736
+
+	Allocating group tables: done                            
+	Writing inode tables: done                            
+	Creating journal (16384 blocks): done
+	Writing superblocks and filesystem accounting information: done 
+
+	[root@localhost ~]#</computeroutput> <userinput>mount /dev/vg1/mirrorlv /mnt</userinput>
+	<computeroutput>
+	[root@localhost ~]#</computeroutput> <userinput>mount</userinput>
+	<computeroutput>
+	/dev/mapper/vg1-mirrorlv on /mnt type ext4 (rw,relatime,
+	seclabel,data=ordered)
+</computeroutput>
+		</programlisting>
+		<emphasis>NOW</emphasis> you are done.
+	</para>
+	<para>
+		<indexterm><primary>zpool</primary><secondary>create</secondary></indexterm>
+		Lets now create configuration as above with ZFS.
+		<programlisting>
+	<computeroutput>		
+	[root@localhost src]#</computeroutput> <userinput>zpool create -f datapool mirror /dev/sdb \
+		/dev/sdc mirror /dev/sdd /dev/sde</userinput>
+	</programlisting>
+	We can now confirm the configuration with <command>zpool list</command> and <command>zfs list</command> commands:
+	<programlisting>
+	<computeroutput>
+	[root@localhost src]#</computeroutput> <userinput>zpool list</userinput>
+	<computeroutput>
+	NAME     SIZE  ALLOC FREE  EXPANDSZ FRAG CAP DEDUP HEALTH ALTROOT
+	datapool 3.97G  50K  3.97G     -    0%    0% 1.00x ONLINE    -
+
+	[root@localhost src]#</computeroutput> <userinput>zfs list</userinput>
+	<computeroutput>
+	NAME       USED  AVAIL  REFER  MOUNTPOINT
+	datapool    49K  3.84G    19K  /datapool
+</computeroutput>
+		</programlisting>
+	Here. It's done. You have a pool consisting of two mirrored vdevs and a filesystem mounted at /datapool. You can confirm pool layout by running:
+	<programlisting>
+		<computeroutput>
+	[root@localhost src]#</computeroutput> <userinput>zpool status datapool</userinput>
+	<computeroutput>
+  	  pool: datapool
+ 	state: ONLINE
+  	  scan: none requested
+	config:
+
+		NAME          STATE     READ WRITE CKSUM
+		datapool      ONLINE       0     0     0
+	  		mirror-0  ONLINE       0     0     0
+	    	  sdb     ONLINE       0     0     0
+	    	  sdc     ONLINE       0     0     0
+	  		mirror-1  ONLINE       0     0     0
+	    	  sdd     ONLINE       0     0     0
+	    	  sde     ONLINE       0     0     0
+
+errors: No known data errors
+</computeroutput>
+	</programlisting>
+	That's it. You are free to create filesystems within the pool to your liking or just use the original datapool filesystem.
+</para>
+</sect1>
+<sect1 xml:id="zfsover-3"><title><indexterm><primary>ZFS</primary> <secondary>basics</secondary></indexterm>ZFS basics</title>
+	<para>
+			To work with ZFS you will have to understand it's technical side and bit of implementation. Lots of in field failures I have seen stemmed from the fact, that people were trying to administer or even troubleshoot ZFS filesystems without really understanding what and why they were doing. Working against the design and limitations caused few times data loss. ZFS goes great lengths to protect your data, but nothing in the world is user proof. If you try really hard - you will break it. 
+		</para>
+		<para>
+			First thing to understand is, ZFS's great features are no replacement for backups. Snapshots, clones, mirroring, will only protect your data as long as enough of the storage is available. Even having those nifty abilities at your command, you should still do backups and test them regularly. 
+		</para>
+		<para>
+			<indexterm><primary>ZFS</primary> <secondary>Copy on Write</secondary></indexterm>ZFS is a Copy on Write filesystem that merges together filesystem, volume manager and raid. 
+			<itemizedlist>
+				<listitem><para>Copy on Write means that with each change to the block of data, the data is written to a completely new location on disk. It allows for transactional and very atomic filesystem - either write occurs entirely, or is not recorded as done. That helps to keep filesystem clean and undamaged in case of power failure.</para></listitem>
+				<listitem><para>Merging volume manager, raid and filesystem together means that you can easily, with one or two commands create a storage volume that has a desired level of redundancy and contains ready to use filesystem or more.</para></listitem>
+			</itemizedlist>
+		</para>
+		<sect2 xml:id="zfsover-4"><title>Terminology</title>
+		<para>
+			To fully understand the features, we need to discuss some terminology for here.
+			<itemizedlist>
+				<listitem><para><indexterm><primary>ZFS</primary><secondary>storage pool</secondary></indexterm>Storage Pool - this is a rough equivalent of volume group from volume manager. It's a combined capacity of disk drives presented to ZFS. A pool can have one or more filesystems. Filesystems created within see all the pool capacity and can grow up to whole available space. That's one point to observe. Any one filesystem can take all the available space making it impossible for other filesystems in the same pool to grow and contain new data. One of ways to deal with it is to use space reservations and quotas.</para></listitem>
+				<listitem><para><indexterm><primary>ZFS</primary><secondary>vdev</secondary></indexterm>vdev is a virtual device that can consist of one or more physical drives. vdev can be a pool or be a part of larger pool. vdev can have a redundancy level or mirror, triple mirror, raidz, raidz2 or raidz3. Even higher levels of mirror redundancy are possible, but most probably impractical and too costly.</para></listitem>
+				<listitem><para>A <indexterm><primary>ZFS</primary><secondary>filesystem</secondary></indexterm>filesystem is exactly that: a filesystem create in boundaries of a pool. A ZFS filesystem can only belong in one pool, but a pool can contain more that one ZFS filesystem. ZFS filesystem can have set reservations (minimum guaranteed capacity), quotas, compression and many other properties. Filesystems can be nested. It means you can create one filesystem within other. Unless you specify otherwise, filesystem will be automatically mounted within it's parent. Topmost ZFS filesystem is called the same as a pool and automatically mounted under root directory, unless specified otherwise.</para></listitem>
+				<listitem><para><indexterm><primary>ZFS</primary><secondary>snapshot</secondary></indexterm>Snapshots are a point in time taken snaps of the filesystem state. Thanks to COW semantics, they are extremely cheap in mean of disk space. Basically, creating a snapshot means recording filesystem vnodes and keeping track of them. Once data on that inode is updated (written to new place - remember it is COW), the old block of data is retained. You can access the old data view by using said snapshot. This way, they only use as much space as has been changed between snapshot time and current time. </para></listitem>
+				<listitem><para>Snapshots are read only. But some people thought it would be cool, if you might mount a snapshot and make changes to it. Such read-write snapshot is called a clone. <indexterm><primary>ZFS</primary><secondary>clones</secondary></indexterm>Clones have found many uses, one of greatest to me are boot environments. With operating system capable of booting off ZFS (illumos distributions, FreeBSD), you can create a clone of your operating system and then run operations in current filesystem or in clone, ie. upgrade the system or install tricky video driver. In case you need to,  you can boot back to working environment. And it only takes as much disk space as the changes introduced. I believe boot environments will come soon to ZFS on Linux soon.</para></listitem>
+				<listitem><para><indexterm><primary>ZFS</primary><secondary>dataset</secondary></indexterm>Dataset - it is a ZFS pool, filesystem, snapshot, volume, clone. It is the layer of ZFS where data can be stored and retrieved.</para></listitem>
+				<listitem><para><indexterm><primary>ZFS</primary><secondary>volume</secondary></indexterm>Volume - it is a filesystem that emulates block device. It cannot be used as a typical ZFS filesystem. For all purposes it behaves like a disk device. One of uses is to export it through iSCSI or FCoE protocols, to be mounted as LUNs on remote server and then used as disks. I'd like to note here, that volumes are my least favorite use of ZFS. Many of features I like ZFS for have limited or no use for those. If you use volumes and snapshot them, you cannot easily mount them locally for file retrieval, as you would with using simple ZFS filesystem. I will elaborate on it later on.</para></listitem>
+				<listitem><para><indexterm><primary>resilver</primary></indexterm>Resilvering is a process of redundant group rebuilt after disk replacement. There are many reasons you may want to replace a disk - drive becomes faulted, you decide to swap the disk for any other reason - once the new drive is added to the pool, ZFS will start to restore redundancy data to it. Here is a very obvious advantage of ZFS over traditional RAIDs. Only data is being resilvered, not whole disks. Take note however, that resilvering is a low priority operating system process. On a very busy storage system, it will take more time.</para></listitem>
+			</itemizedlist>
+		</para>
+	</sect2>
+		<figure><title>Graphical representation of a possible pool</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/zpool.jpg" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>A ZFS pool</phrase></textobject>
+		</mediaobject>
+		</figure>
+		<para>
+			In the figure 1.1. Graphical representation of a possible pool, four disks comprise two vdevs (two disks in each vdev). Within the pool, on top of vdevs, lives a filesystem. Data are automatically balanced across all vdevs, across all disks.
+		</para>
+		<para>
+			The Copy On Write (COW) design warrants a quick explanation, as it is a core concept enabling some essential ZFS features. Figure 1.2 presents a single block of freshly written data.
+			<figure><title>A single data block</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/single_block.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>A single data block</phrase></textobject>
+		</mediaobject>
+		</figure>
+			When the block is later modified, it is not being rewritten. Instead, ZFS writes it anew in new place on disk, as in figure 1.3. The old block is still on the disk, but ready for reuse, if free space is needed.
+			<figure><title>Rewritten data block</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/two_bloks.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>Rewritten data block</phrase></textobject>
+		</mediaobject>
+		</figure>
+			Lets assume, that before the data has been modified, system operator creates a snapshot. The DATA 1 SNAP block is being marked as belonging to the filesystem snapshot. When, later on, data is modified and written in new place, the old block location is recorded in a snapshot vnodes table. Whenever filesystem needs to be restored to the snapshot time (when rolling back or mounting snapshot), the data is reconstructed from vnodes in current filesystem, unless the data block is also recorded in the snapshot table (DATA 1 SNAP)
+			<figure><title>Snapshotted data block</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/two_blocks_snapshot.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>Snapshotted data block</phrase></textobject>
+		</mediaobject>
+		</figure>
+		</para>
+		<para>
+			Deduplication is entirely separate scenario. The blocks of data are being compared to already present in the filesystem and if duplicates are found, only new entry is added to DeDuplication Table, not writing the actual data to the pool.
+		<figure><title>Deduplicated data block</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/ddt.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>Deduplicated data block</phrase></textobject>
+		</mediaobject>
+		</figure>
+		</para>
+	</sect1>
+	<sect1 xml:id="zfsover-5"><title>ZFS limitations</title>
+		<para>
+		Thing to keep in mind are ZFS limitations. As with every filesystem, ZFS also has its share of weaker points. To successfully operate the storage, even not DIY one, you will need to remember them. Fortunately there are not so many. Some require active monitoring.
+		<itemizedlist>
+			<listitem><para>As with most filesystems, ZFS suffers terrible performance penalty when filled up to 80% and more of its capacity. It is a common problem with filesystems, but quite many users I met never heard of it. Remember, when your pool starts filling to 80% of capacity, you need to look at either expanding the pool or migrating to bigger setup.</para></listitem>
+			<listitem><para>You cannot shrink the pool. It means, you cannot remove drives nor vdevs from it, once they have been added. This is something of a sore point for ZFS community. Deplix, Inc. has developed a solution to this, but is still has not been merged into main OpenZFS source tree and didn't make it to ZFS as of yet.</para></listitem>
+			<listitem><para>Except for turning a single disk pool into mirrored pool you cannot change redundancy type. It means, that once you decide on a redundancy type, your only way of changing it is destroying the pool and creating anew, recovering data from backups or other location. This is quite important point. Lets consider a scenario, when you create a pool consisting of two raidz vdevs, 4 disks each, 2 TB capacity each disk. That is total of 8 disks, with total pool capacity of 6 disks: 12 TB. In raidz redundancy level one disks capacity per vdev contains parity data. If you later decide to grow your pool, you need to add exactly same vdev: 4 disk raidz, 2 TB capacity each disk. Lets now consider you go for 8 disk raidz2 pool. If you decide to grow your pool, again, you need to add next 8 disks vdev.</para></listitem>
+			<listitem><para>Increasing pool size should only be done by adding a new vdevs consisting of the same disk number, the same sizes and redundancy type as existing vdevs in the pool. Exception is mirrored vdevs.</para></listitem>
+			<listitem><para>This is not exactly a limitation, but it is something to take into account: each vdev's disks capacity will be used up to capacity of smallest disk in the vdev. If you decide to build a mirror or raidz, or raidz2 vdev consisting of 2 TB disks and one 1 TB disk, each disk in the vdev will be filled up to 1 TB of its capacity. It can be alleviated later. You can exchange the smaller disk for larger and let ZFS rebuild (resilver in ZFS lingo) the raid. It is not very common scenario in enterprise arrays, but in small business and home storages it is not unheard of. If you need to start with used disks of varied capacity, it's possible. Bear in mind, however, the size limit that that smallest disk will incur.
+			</para></listitem>
+		</itemizedlist>
+	</para>
+</sect1>
+<sect1 xml:id="zfsover-6"><title>Pool layout explained</title>
+	<para>
+		The above last point may sound convoluted, so let us demystify it. Assume that we have a pool consisting of 5 disks, all of them in RAIDZ2 configuration (rough equivalent of RAID-6). 4 disks contain data and two contain parity data. Resiliency of the pool allows for loosing up to two disks. Any number above that will irreversibly destroy filesystem and result in need for backups. 
+		<figure><title>Single vdev raidz-2 pool</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/raidz2-1.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>Single vdev raidz-2 pool</phrase></textobject>
+		</mediaobject>
+		</figure>
+		Figure 4.1 above presents the pool. While it is technically possible to create a new vdev of less or larger number of disks, with different sizes, it will almost surely result in performance issues. And remember - you cannot remove from pool once added vdevs. It means, that if you suddenly add a new vdev, say, 4 disks raidz, as in figure 4.2, you will not only compromise pool integrity, introducing a vdev with lower resiliency, but also you will introduce performance issues.
+		<figure><title>Wrongly enhanced pool</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/raidz2-2.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>Single vdev turned into mirror</phrase></textobject>
+		</mediaobject>
+		</figure>
+		The one exception of "cannot change the redundancy level" rule is single disk to mirrored and mirrored to even more mirrored. You can attach a disk to a single disk vdev and that will result in mirrored vdev (Figure 4.3). You can also attach a disk to a two-way mirror, creating a triple-mirror (Figure 4.4).
+		<figure><title>Single vdev turned into mirror</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/single_vdev_zpool_attach.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>Single vdev turned into mirror</phrase></textobject>
+		</mediaobject>
+		</figure>
+		<figure><title>Two way mirror turn three-way mirror</title>
+		<mediaobject>
+  			<imageobject>
+    			<imagedata fileref="gfx/mirror_vdev_zpool_attach.png" align="center"/>
+  			</imageobject>
+  			<textobject><phrase>Two way mirror turn three-way mirror</phrase></textobject>
+		</mediaobject>
+		</figure>
+	</para>
+</sect1>
+<sect1 xml:id="zfsover-8"><title>Common tuning options</title>
+	<para>
+		Following online tutorials you may notice number of them tells you to set two options (one pool level and one filesystem level) that are supposed to increase the speed. Unfortunately, most of them don't explain what they do and why they should work: <literal>ashift=12</literal> and <literal>atime=off</literal>.
+	</para>
+ 	<para>		
+		While the truth is, they may offer a significant performance increase, setting them blindly is a major error. As stated previously, to properly administer your storage server, you need to understand why you use options that are offered.
+	</para>
+	<para><indexterm><primary>ashift</primary></indexterm>
+		<indexterm><primary>Advanced Layout</primary></indexterm>
+		The ashift option allows to set up a physical block layout on disks. When disks capacities kept growing, at some point keeping the original block size of 512 bytes became impractical and disk vendors changed it to 4096 bytes. But for backwards compatibility reasons disks sometimes still advertise 512 block sizes. This can have adverse effect on pool performance. The ashift option was introduced in ZFS to allow manual change of block sized done by ZFS. Since it's specified as a binary shift, the value is a power, thus: 2^12 = 4096. Omitting the ashift option allows ZFS to detect the value (disk can lie about it), using value of 9 will set it to blocksize of 512. The new disk block size is called Advanced Layout (AL). 
+	</para>
+	<para>
+		The ashift option can only be used during pool setup or when adding a new device to a vdev. Which brings another issue: if you create a pool setting up ashift and later add a disk not setting it, your performance may go awry due to mismatched ashift parameters. If you know you may have used the option or are unsure, always check it before adding new devices:
+	<programlisting>
+  	<computeroutput><indexterm><primary>zpool</primary><secondary>list</secondary></indexterm>
+  	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
+  	<computeroutput>
+	NAME SIZE  ALLOC FREE  EXPANDSZ FRAG CAP DEDUP HEALTH ALTROOT
+	data 2,72T 133G  2,59T    -     3%    4% 1.00x ONLINE    -
+	</computeroutput>
+
+	<computeroutput>
+	trochej@madchamber:~$</computeroutput><userinput> sudo zpool get all data</userinput>
+	<computeroutput>
+	NAME  PROPERTY                    VALUE                SOURCE
+	data  size                        2,72T                -
+	data  capacity                    4%                   -
+	data  altroot                     -                    default
+	data  health                      ONLINE               -
+	data  guid                        7057182016879104894  default
+	data  version                     -                    default
+	data  bootfs                      -                    default
+	data  delegation                  on                   default
+	data  autoreplace                 off                  default
+	data  cachefile                   -                    default
+	data  failmode                    wait                 default
+	data  listsnapshots               off                  default
+	data  autoexpand                  off                  default
+	data  dedupditto                  0                    default
+	data  dedupratio                  1.00x                -
+	data  free                        2,59T                -
+	data  allocated                   133G                 -
+	data  readonly                    off                  -
+	data  ashift                      0                    default
+	data  comment                     -                    default
+	data  expandsize                  -                    -
+	data  freeing                     0                    default
+	data  fragmentation               3%                   -
+	data  leaked                      0                    default
+	data  feature@async_destroy       enabled              local
+	data  feature@empty_bpobj         active               local
+	data  feature@lz4_compress        active               local
+	data  feature@spacemap_histogram  active               local
+	data  feature@enabled_txg         active               local
+	data  feature@hole_birth          active               local
+	data  feature@extensible_dataset  enabled              local
+	data  feature@embedded_data       active               local
+	data  feature@bookmarks           enabled              local
+	</computeroutput>
+ 	</programlisting>
+ 		As you may have noticed, I let ZFS auto detect the value.
+	</para>
+	<para>
+		<indexterm><primary>smartctl</primary></indexterm>
+		If you are unsure about the AL status for your drives using <command>smartctl</command> command:
+		<programlisting>
+			<computeroutput>
+	[trochej@madtower sohozfs]$</computeroutput> <userinput>sudo smartctl -a /dev/sda</userinput>
+	<computeroutput>
+	smartctl 6.4 2015-06-04 r4109 [x86_64-linux-4.4.0] (local build)
+	Copyright (C) 2002-15, Bruce Allen, Christian Franke, 
+		www.smartmontools.org
+
+	=== START OF INFORMATION SECTION ===
+	Model Family:     Seagate Laptop SSHD
+	Device Model:     ST500LM000-1EJ162
+	Serial Number:    W7622ZRQ
+	LU WWN Device Id: 5 000c50 07c920424
+	Firmware Version: DEM9
+	User Capacity:    500,107,862,016 bytes [500 GB]
+	Sector Sizes:     512 bytes logical, 4096 bytes physical
+	Rotation Rate:    5400 rpm
+	Form Factor:      2.5 inches
+	Device is:        In smartctl database [for details use: -P show]
+	ATA Version is:   ACS-2, ACS-3 T13/2161-D revision 3b
+	SATA Version is:  SATA 3.1, 6.0 Gb/s (current: 6.0 Gb/s)
+	Local Time is:    Fri Feb 12 22:11:18 2016 CET
+	SMART support is: Available - device has SMART capability.
+	SMART support is: Enabled
+			</computeroutput>
+		</programlisting>
+		You will notice that my drive has line:
+		<programlisting>
+			<computeroutput>
+	Sector Sizes:     512 bytes logical, 4096 bytes physical			
+			</computeroutput>
+		</programlisting>
+		It tells you that drive has physical layout of 4096 bytes, but driver advertises 512 bytes for backwards compatibility.
+	</para>
+	<para>
+		atime can be set at any time on any file system. This option tells ZFS if it should track last access for reads. While it is being advertised on the Internet as a good performance boost, disabling this option should be given a good forethought. You should be sure that your applications that will use the data off your storage, will not rely on that functionality. After all, it is a standard filesystem property, expected also from ext4 filesystem. While it may save you few writes and CPU cycles, it may also incur penalty in decreased application usability or stability. I know for certain that some IMAP servers and clients rely on those times to be set. 
+	</para>
+	<para>
+		On the other hand, this is a cheap way to boost the performance and can be easily turned on again. Best way to decide it research applications that you will host files for and do some testing.
+	</para>
+</sect1>
+<sect1 xml:id="zfsover-9"><title>Deduplication</title>
+<para>
+	<indexterm><primary>Deduplication</primary></indexterm>
+	ZFS has an interesting option that spurred quite lot of interest, when first introduced. Turning deduplication on tells ZFS to keep track of data blocks. Whenever data is written to disks, ZFS will compare with blocks already in the filesystem and if finds any block identical, will not write physical data, but add some meta-information and thus save lots and lots of disk space.
+</para>
+<para>
+	While the feature seems great in theory, in practice it turned out to be rather tricky to use it smartly. First of all, deduplication comes at a cost and it's a cost in RAM and CPU power. For each data block that is being deduplicated, your system will add an entry to DDT (deduplication tables) that exist in your RAM. Ironically, for ideally deduplicating data, the result of DDT in RAM was system ground to a halt by lack of memory and CPU power for operating system functions. A catch is, DDT are persistent. You can at any moment disable deduplication, but once deduplicated data stay deduplicated and if you run into system stability issues due to it, disabling and reboot won't help. On next pool import (mount), DDT will be loaded into RAM again. There are two ways to get rid of them: destroy the pool, create it anew and restore data or disable deduplication, and move data on the pool so it gets undeduplicated on next writes. Both options will take time, depending on the size of your data. While deduplication may save your disk space, research it carefully.
+</para>
+<para>
+	<indexterm><primary>zpool</primary><secondary>list</secondary></indexterm>
+	Deduplication ratio is by default displayed by <command>zpool list</command> command. Ratio of 1.00 means no deduplication happened:
+	<programlisting>
+  	<computeroutput>
+  	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
+  	<computeroutput>
+	NAME SIZE  ALLOC FREE  EXPANDSZ FRAG CAP DEDUP HEALTH ALTROOT
+	data 2,72T 133G  2,59T    -     3%    4% 1.00x ONLINE    -
+	</computeroutput>
+</programlisting>
+	<indexterm><primary>ZFS</primary><secondary>deduplication</secondary></indexterm>
+	You can check the deduplication setting by querying your filesystems <option>deduplication</option> property:
+	<programlisting>
+  	<computeroutput>
+  	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs get dedup data/datafs</userinput>
+  	<computeroutput>
+	NAME         PROPERTY  VALUE          SOURCE
+	data/datafs  dedup     off            default
+	</computeroutput>
+</programlisting>
+	Deduplication is a setting set per filesystem.
+</para>
+</sect1>
+<sect1 xml:id="zfsover-10"><title>Compression</title>
+<para><indexterm><primary>Compression</primary></indexterm>
+	An option that saves me both disk space and add some speed is compression. There are several compression algorithms available for use by ZFS. Basically, you can tell filesystem to compress any block of data it will write to disk. With modern CPUs, you can usually add some speed by writing smaller physical data. You processors should be able to cope with packing and unpacking data on the fly. Exception can be data that compress badly, ie. mp3, jpg or video. Textual data (application logs etc.) usually play well with this option. For my personal use, I always turn it on.
+</para>
+<para>
+	The compression can be set by on filesystem basis:
+	<indexterm><primary>ZFS</primary><secondary>compression</secondary></indexterm>
+	<programlisting>
+		<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs get compression data/datafs</userinput>
+	<computeroutput>
+	NAME         PROPERTY     VALUE     SOURCE
+	data/datafs  compression  on        local
+
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs set compression=on data/datafs</userinput>
+	</programlisting>
+	Compression ratio can be found out by querying a property:
+	<programlisting>
+		<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs get compressratio data/datafs</userinput>
+	<computeroutput>
+	NAME         PROPERTY       VALUE  SOURCE
+	data/datafs  compressratio  1.26x  
+		</computeroutput>
+	</programlisting>
+</para>
+<para>
+	Several compression algorithms are available. If you simply turn compression on, <literal>lzjb</literal> algorithm is used. It is considered a good compromise between performance and compression ratio. Other compression algorithms available to you are listed in <command>zfs</command> man page. A new algorithm is lz4. It has higher performance and higher compression ratio than lzjb. It can only be enabled for pools that have <literal>feature@lz4_compress</literal> feature flag property:
+	<programlisting>
+		<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool get feature@lz4_compress data</userinput>
+	<computeroutput>
+	NAME  PROPERTY              VALUE                 SOURCE
+	data  feature@lz4_compress  active                local
+		</computeroutput>
+	</programlisting>
+	If the feature is enabled, you can set compression=lz4 for any given dataset. You can enable it by invoking command:
+	<programlisting>
+		<computeroutput>
+	trochej@madchamber:~$ <userinput>sudo zpool set feature@lz4_compress=enabled data</userinput>
+		</computeroutput>
+	</programlisting>
+</para>
+</sect1>
+<sect1 xml:id="zfsover-11"><title>ZFS pool state</title>
+<para>
+	If you look again at the listing of my pool:
+	<programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
+	<computeroutput>
+	NAME SIZE  ALLOC FREE  EXPANDSZ FRAG CAP DEDUP HEALTH ALTROOT
+	data 2,72T 133G  2,59T    -     3%   4%  1.00x ONLINE -
+	</computeroutput>
+</programlisting>
+	You will notice a column called <indexterm><primary>ZFS</primary><secondary>pool HEALTH</secondary></indexterm><emphasis>HEALTH</emphasis>. 
+</para>
+<para>
+	It is a status of your ZFS pool. There are several other indicators that you can see here:
+	<itemizedlist>
+		<listitem><para><indexterm><primary>ZFS</primary><secondary>pool ONLINE</secondary></indexterm>ONLINE - the pool is healthy (there are no errors detected), it is imported (mounted in traditional filesystems jargon) and ready to use. It doesn't mean it's perfectly okay. ZFS will keep pool marked online even if some small number of I/O errors or correctable data errors occur. You should monitor other indicators also, ie. disks' health (hdparm, smartctl, lsiutil for LSI SAS controllers).</para></listitem>
+		<listitem><para><indexterm><primary>ZFS</primary><secondary>pool DEGRADED</secondary></indexterm>DEGRADED - probably only applicable to redundant sets, where disks in mirror or raidz or raidz2 pools have been lost. The pool may have become non-redundant. Loosing another disk may render it corrupt. Bear in mind, that in triple-mirror or raidz2 loosing one disk doesn't render pool non-redundant.</para></listitem>
+		<listitem><para><indexterm><primary>ZFS</primary><secondary>pool FAULTED</secondary></indexterm>FAULTED - a disk or a vdev is inaccessible. It means that ZFS cannot read nor write to it. In redundant configurations, a disk may be FAULTED but its vdev may be DEGRADED and accessible still. This may happen if in mirrored set one disk is lost. If you loose a top level vdev, ie. both disks in a mirror, your whole pool will be inaccessible and your pool will become corrupt. Since there is no way to restore filesystem, your options at this stage are recreating pool with healthy disks and restore from backups or seek ZFS data recovery experts. The latter is usually pretty costly option.</para></listitem>
+		<listitem><para><indexterm><primary>ZFS</primary><secondary>pool OFFLINE</secondary></indexterm>OFFLINE - a device has been disabled (taken offline) by administrator. Reasons may vary but it need not mean the disk is faulty.</para></listitem>
+		<listitem><para><indexterm><primary>ZFS</primary><secondary>pool UNAVAIL</secondary></indexterm>UNAVAIL - the disk or vdev cannot be opened. Effectively ZFS cannot read nor write to it. You may notice it sounds very similar to FAULTED state. The difference would mainly be that in FAULTED state, device has displayed number of errors before being marked as FAULTED by ZFS. With UNAVAIL system cannot talk to the device, possibly it went totally dead, or power supply is too weak to power all of your disks.</para></listitem>
+		<listitem><para><indexterm><primary>ZFS</primary><secondary>pool REMOVED</secondary></indexterm>REMOVED - if your hardware supports it, when disk is physically removed without first removing it from pool using zpool command, it will be marked as REMOVED.</para></listitem>
+	</itemizedlist>
+	Checking pool health explicitly is done using zpool status and zpool status -x command:
+	<programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool status -x</userinput>
+	<computeroutput>
+	all pools are healthy
+
+	trochej@madchamber:~$ sudo zpool status
+  	  pool: data
+ 	 state: ONLINE
+  	  scan: none requested
+	config:
+
+        	NAME        STATE     READ WRITE CKSUM
+        	data        ONLINE       0     0     0
+          		sdb      ONLINE      0     0     0
+
+	errors: No known data errors
+	</computeroutput>
+</programlisting>
+<literal>zpool status</literal> will print detailed health and configuration of all pool devices. When pool consists of hundreds of disks, it may be troublesome to fish out a faulty device. To that end you can use <literal>zpool status -x</literal>, which will print only status of pools that experienced issues.
+	<programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool status -x</userinput>
+	<computeroutput>
+  	  pool: data
+ 	 state: DEGRADED
+  	status: One or more devices has been taken offline by the administrator.
+            Sufficient replicas exist for the pool to continue functioning in a
+            degraded state.
+	action: Online the device using 'zpool online' or replace the device with
+            'zpool replace'.
+ 	scrub: resilver completed after 0h0m with 0 errors on Wed Feb 10 15:15:09 2016
+	config:
+
+        	NAME        STATE     READ WRITE CKSUM
+        	data        ONLINE       0     0     0
+        	  mirror-0  DEGRADED     0     0     0
+          		sdb      ONLINE      0     0     0
+          		sdc      OFFLINE     0     0     0 48K resilvered
+
+	errors: No known data errors
+	</computeroutput>
+</programlisting>
+</para>
+<para>
+	Further details are out of the scope of this book. You should visit <ulink url="http://completelyfake.eu/illumos/docs/zfsadmin/">ZFS Administrator Guide</ulink> managed by illumos, OpenZFS and OpenIndiana community. You should also study <command>zfs</command> and <command>zpool</command> commands' man pages.
+	</para>
+</sect1>
+<sect1 xml:id="zfsover-12"><title>ZFS version</title>
+<indexterm><primary>ZFS</primary><secondary>version</secondary></indexterm>
+<para>
+	ZFS was designed with relative ease of incremental features introduction. As part of that mechanism ZFS versions have been introduced in means of a single digit. Tracking that digit, system operator would know if their pool uses latest ZFS version - including new features and bugfixes. Upgrade is done inplace and does not require any downtime.
+</para>
+	<para>
+		That was functioning quite well, when ZFS was developed solely by Sun Microsystems. With advent of OpenZFS community - gathering developers from illumos, Linux, OSX and FreeBSD worlds - it soon became obvious, that it would be difficult if not impossible to agree with every on-disk format change across whole community. Thus the version number stayed at the latest that was ever released as opensource from Oracle Corp: 28. From that point pluggable architecture of "features flags" was introduced. ZFS implementations are compatible if they implement the same set of feature flags. 
+	</para>
+	<para>
+		If you look again at the <literal>zpool</literal> command output for my host:
+	<programlisting>
+  	<computeroutput>
+  	trochej@madchamber:~$</computeroutput><userinput> sudo zpool get all data</userinput>
+	<computeroutput>
+	NAME  PROPERTY                    VALUE                SOURCE
+	data  size                        2,72T                -
+	data  capacity                    4%                   -
+	data  altroot                     -                    default
+	data  health                      ONLINE               -
+	data  guid                        7057182016879104894  default
+	data  version                     -                    default
+	data  bootfs                      -                    default
+	data  delegation                  on                   default
+	data  autoreplace                 off                  default
+	data  cachefile                   -                    default
+	data  failmode                    wait                 default
+	data  listsnapshots               off                  default
+	data  autoexpand                  off                  default
+	data  dedupditto                  0                    default
+	data  dedupratio                  1.00x                -
+	data  free                        2,59T                -
+	data  allocated                   133G                 -
+	data  readonly                    off                  -
+	data  ashift                      0                    default
+	data  comment                     -                    default
+	data  expandsize                  -                    -
+	data  freeing                     0                    default
+	data  fragmentation               3%                   -
+	data  leaked                      0                    default
+	data  feature@async_destroy       enabled              local
+	data  feature@empty_bpobj         active               local
+	data  feature@lz4_compress        active               local
+	data  feature@spacemap_histogram  active               local
+	data  feature@enabled_txg         active               local
+	data  feature@hole_birth          active               local
+	data  feature@extensible_dataset  enabled              local
+	data  feature@embedded_data       active               local
+	data  feature@bookmarks           enabled              local
+	</computeroutput>
+ 	</programlisting>
+ 	You will notice that last few properties start with <emphasis>feature@</emphasis> string. That's the feature flags you need to look for. The find out the all supported versions and feature flags run commands: <literal>sudo zfs upgrade -v</literal> and <literal>sudo zpool upgrade -v</literal> as in examples below:
+ 	<programlisting>
+ 	<computeroutput>
+ 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs upgrade -v</userinput>
+ 	<computeroutput>
+	The following filesystem versions are supported:
+
+	VER  DESCRIPTION
+	---  --------------------------------------------------------
+	 1   Initial ZFS filesystem version
+	 2   Enhanced directory entries
+	 3   Case insensitive and filesystem user identifier (FUID)
+	 4   userquota, groupquota properties
+	 5   System attributes
+
+	For more information on a particular version, including supported 
+	releases, see the ZFS Administration Guide.
+	</computeroutput>
+
+	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool upgrade -v</userinput>
+	<computeroutput>
+	This system supports ZFS pool feature flags.
+
+	The following features are supported:
+
+	FEAT DESCRIPTION
+	-------------------------------------------------------------
+	async_destroy                         (read-only compatible)
+	     Destroy filesystems asynchronously.
+	empty_bpobj                           (read-only compatible)
+	     Snapshots use less space.
+	lz4_compress                         
+	     LZ4 compression algorithm support.
+	spacemap_histogram                    (read-only compatible)
+	     Spacemaps maintain space histograms.
+	enabled_txg                           (read-only compatible)
+	     Record txg at which a feature is enabled
+	hole_birth                           
+	     Retain hole birth txg for more precise zfs send
+	extensible_dataset                   
+	     Enhanced dataset functionality, used by other features.
+	embedded_data                        
+	     Blocks which compress very well use even less space.
+	bookmarks                             (read-only compatible)
+	     "zfs bookmark" command
+
+	The following legacy versions are also supported:
+
+	VER  DESCRIPTION
+	---  --------------------------------------------------------
+	 1   Initial ZFS version
+	 2   Ditto blocks (replicated metadata)
+	 3   Hot spares and double parity RAID-Z
+	 4   zpool history
+	 5   Compression using the gzip algorithm
+	 6   bootfs pool property
+	 7   Separate intent log devices
+	 8   Delegated administration
+	 9   refquota and refreservation properties
+	 10  Cache devices
+	 11  Improved scrub performance
+	 12  Snapshot properties
+	 13  snapused property
+	 14  passthrough-x aclinherit
+	 15  user/group space accounting
+	 16  stmf property support
+	 17  Triple-parity RAID-Z
+	 18  Snapshot user holds
+	 19  Log device removal
+	 20  Compression using zle (zero-length encoding)
+	 21  Deduplication
+	 22  Received properties
+	 23  Slim ZIL
+	 24  System attributes
+	 25  Improved scrub stats
+	 26  Improved snapshot deletion performance
+	 27  Improved snapshot creation performance
+	 28  Multiple vdev replacements
+
+	For more information on a particular version, including 
+	supported releases, see the ZFS Administration Guide.
+	</computeroutput>
+ 	</programlisting>
+ 		The both commands above printed information on maximum level of ZFS pool and filesystem versions and what feature flags are available for them.
+ 	</para>
+ 	<para>
+ 		Current version of you pool and filesystems can be checked with <literal>zpool upgrade</literal> and <literal>zfs upgrade</literal> commands:
+ 	<programlisting>
+ 	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool upgrade</userinput>
+	<computeroutput>
+	This system supports ZFS pool feature flags.
+
+	All pools are formatted using feature flags.
+
+	Every feature flags pool has all supported features enabled.
+	</computeroutput>
+
+	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs upgrade</userinput>
+	<computeroutput>
+	This system is currently running ZFS filesystem version 5.
+
+	All filesystems are formatted with the current version.
+	</computeroutput>
+
+ 	</programlisting>
+	</para>
+</sect1>
+</chapter>
+
+<chapter xml:id="planning"><title>Planning</title>
+	<para>Before you go and buy a hardware for your storage, there are few things to consider. How much disk space will you need? How many client connections (sessions) your storage will serve? Which protocol will you use? What kind of data you plan to serve?
+	</para>
+<sect1 xml:id="planning-2"><title>Don't rush</title>
+	<para>
+		First advice that you always should keep in mind: don't rush it. You are about to invest your money and time. While you can later modify the storage according to your needs, some changes will require that you recreate the ZFS pool, which means all data on it will be lost. If you buy wrong disks (example: too small), you will need to add more and may run out of free slots. 
+	</para>
+</sect1>
+<sect1 xml:id="planning-3"><title>Questionnaire</title>
+	<para>There are few questions you should ask yourself before starting to scope the storage. Answers that you will give here will play key role in later deployment.
+		<itemizedlist><listitem><para>The amount of data you expect to store will determine number and size of disks you will need to buy. That will also imply other factors, like server size.</para></listitem>
+		<listitem><para>Number of concurrent client connections will determine amount of RAM that's you'll need. It may also imply buying SSD disks to serve as lever 2 cache for your storage and resigning from using SATA disk at all, if you were considering them. Even if you are going to store hundreds of terabytes, but only few client machines will ever utilize it and not very intensively, you may well get with low amount of memory.</para></listitem>
+		<listitem><para>The above will also imply the kind of network interface in you server and switch it should be attached to.</para></listitem>
+		<listitem><para>How critical the data are should push you into looking at certified and probably more costly hardware, known to perform well and for longer time. It will also tell you which redundancy level you should use, influencing the final cost.</para></listitem>
+		<listitem><para>The kind of data you will serve, may imply the architecture of you storage pool. Streaming a video files for considerably large amount of clients or service virtual machines data files will most probably mean you need to use mirrors, which directly influence final capacity of your array.</para></listitem>
+		</itemizedlist>
+	</para>
+</sect1>
+<sect1 xml:id="planning-4"><title>Scope</title>
+	<para>
+		Firstly, lets create upper bounds for what will be considered a SoHo storage in this guide. Given current disk sizes, up to 12 slots in a single node, up to 30 TB of raw capacity. Either internal SAS or SATA drives. One or two slots for eventual SSDs for speeding up reads. Possibly a mirrored ZIL device to speed up and concatenate writes to disks. A system drive, possibly mirrored, although, currently setting up Linux system on ZFS is not trivial and booting from ZFS is not recommended. Up to 128 Gigabytes of RAM, possibly 64. A 64bit CPU with four or more cores. While running ZFS on 32bit systems is possible, it certainly is not recommended. If you intend to use external disk enclosures (JBODS) connected through SAS or FibreChannel, this book is most probably not intended for you. It is possible to set up and administer such storage manually and many people have done so, but it may involve additional steps not covered in the guide. If you want to run tens or hundreds of disks, you'd probably do yourself a favor if you consider FreeNAS or even commercial solutions with paid support. Keeping track of system performance, memory usage, disks, controllers and cables health is probably best managed by specialized products.
+	</para>
+</sect1>
+<sect1 xml:id="planning-5"><title>HW buyer guide</title>
+	<para>
+		Hardware is usually a long term investment. Try to remember about points below:
+		<itemizedlist>
+			<listitem><para>When buying disks, a common practice is to make sure you buy each disk from the same vendor and model, to keep geometry and firmware the same, but from different batch, so you minimize risk of several disks dying at the same time. I suppose that for a small time buyer (few up to 20 disks) simplest way to achieve it is to buy disks from different shops. A cumbersome, but storage operators have seen disk batches failing at the same time many times in their lives.</para></listitem>
+			<listitem><para>Buy few pieces for spares. Storage system lifetime is usually counted in years and is often longer than that of disk model, especially if you decide to use consumer grate SATA disks. When one of them fails in few years, you may be surprised by the fact, that you cannot buy this model any more. Introducing different one in a pool is always a performance risk. Although, if that happens, don't despair. ZFS lets you exchange all disks in a pool. This trick has been used in the past to increase size of the pool, when it became insufficient. I'll explain the procedure in Maintenance chapter. Be aware, that replacing all disks in 10 disk pool can take weeks on a filled and busy system.</para></listitem>
+			<listitem><para>Scope power supply properly. If your power unit is unstable or insufficient, you may encounter mysterious failures (disks dissapearing, disk connection dropping, random i/o errors to the pool) or may not be able to use your disks at all.</para></listitem>
+			<listitem><para>Performance wise, the more disks the better. The smaller disks, the better. ZFS threads writes and reads among vdevs. The more vdevs, the more read/write threads.</para></listitem>
+			<listitem><para>Performance wise, plan for much RAM. ZFS needs at least 2 Gigabytes of RAM to work sensibly, but for any real life use, I'd not go below 8 Gigabytes. For a storage system for SoHo, I would recommend looking at 64 GiB and more. The thing is, ZFS caches data very aggressively, so it will try to use as much RAM as possible. It will however yield any time, system demands RAM for normal operation (new program being run etc.). So the more it can fit in your memory, the better. </para></listitem>
+			<listitem><para>Plan for SSDs (at least three). You don't need to buy them upfront. ZFS is a hybrid storage filesystem, which means, it can use SSD disks for level 2 cache. It's gonna be much slower than you RAM, but it's cheaper and still much faster than your platter disks. For a fraction of RAM price you can get 512 GiB SSD drive, which should allow for another speed improvement. That's one SSD. Next two SSDs would be for external ZFS Intent Log. The filesystem don't flush all data all the time to physical storage. It ties writes in transactions and flushed several at the same time, to minimize filesystem fragmentation and real i/o to disks. If you give ZFS external device for ZIL, it can speed things up by grouping even more data before flushing it down. This additional pool device should be mirrored, because it's where you can loose your data. In case of power failure, data on external ZIL must be persistent. There are battery backed up DRAM devices that emulate small SSD disks, ie. ZeusRAM. They come in 8 and 16 GB sizes, which is enough for ZIL and are fast as memory, but they are costly. You can think of mirroring your L2ARC too (the level 2 cache), but loosing this device won't endanger your data.</para></listitem>
+			<listitem><para>While SAS standard is sure to get you better performance and life expectancy from your disks, for SoHo solutions SATA is enough, especially if you consider that there are enterprise class SATA disks. The price difference however for such deployment shouldn't be very high. If unsure, choose SAS, if your budget allows.</para></listitem>
+			<listitem><para>Do not buy hardware and softraid controllers. While in the past RAID cards were necessary to offload both CPU units and RAM, both of those resources are now abundant and cheap. You CPU and your RAM will be more than enough for the workload and RAID cards take away one important capability of ZFS. ZFS ensures data safety by talking directly to the disk: getting reliable information on when data i s flushed to physical disks and what block sizes are being used. RAID controllers mediate in between and can make their own "optimizations" to the I/O, which may lower ZFS reliability. Other thing is, RAID controllers are incompatible between various vendors and even the same card but different firmware revision may be unable to access your RAID set. This means, that in case of controller failure, you loose whole setup and need to restore data from backup. Softraids are even worse, in that that need a special software (often limited to only one operating system), to actually work. ZFS is superior in all of above. Not only can it use all processing power and all RAM you can give it to speed up your I/O, but also disks in the pool can be migrated between all software platforms that implement the same OpenZFS version. Also, the exact sequence of disks in disk slots is not important, as pool remembers its configuration based on both disk device names (ie. /dev/sdb) but also disk GUID given them by ZFS during pool creation.</para></listitem>
+			<listitem><para>Networking cards at least 1Gb of speed. Remember, that this server networking card's bandwidth will be spread among all computer machines that will simultaneously utilize the storage. It is quite sensible to consider 10Gb, but you also need to consider your other networking gear: switches, cabling etc. Remember though: network plays a role in performance analysis at quite large amount of performance issues I was debugging were caused not by storage itself, but by networking layer.</para></listitem>
+			<listitem><para>Plan for redundancy. Always. This means, that for high speed read pools you need to consider mirrored storage, effectively halving total capacity of disks you buy. RAIDZ setup means your capacity will be lowered by one disk per each vdev you create. For RAIDZ-2, it will be two disks.</para></listitem>
+		</itemizedlist>
+	</para>
+</sect1>
+<sect1 xml:id="planning-6"><title>Data security</title>
+<para>
+	You are going to use ZFS storage to keep data and serve it to various people in your company. Be it two, ten or fifty, always put some thought into planning the layout. Various directories that will store data that vary by kind, sensitivity, compressibility will pay off in the future. Well designed directory structure will simplify both organizational things, like access control, and technical side, like enabled or disabled compression, atime option etc.
+</para>
+<para>
+	ZFS filesystems behave like directories. It is quite common to create a separate ZFS filesystem per user home directory, or example, so that they can have fine grained backup policies, ACLs and compression mechanisms.
+</para>
+<para>
+	This is one place in the guide, where I cannot be very specific. You will need to consider your company size, number of employees accessing the storage, growth perspectives, data sensitivity etc. Whatever you do, however, don't skip this point. I've seen quite a few companies, which overlooked the moment they have should switched from infrastructure that freely evolves, into something that is engineered. 
+	</para>
+	<sect2 xml:id="planning-7"><title>CIA</title>
+	<para>
+		There are many data security methodologies and one of them, I believe most classic, uses acronym C.I.A. to explain aspects of data security. Letters stand for Confidentiality, Integrity and Availability. While it focuses rather on InfoSec side of things, it's pretty good view on storage administration also. Let me introduce those in the view of storage administrator.
+		<itemizedlist>
+			<listitem><para>Confidentiality. Data must be available only to people that are entrusted with them. No one that is not explicitly allowed to view data, shouldn't be able to access it. This side of security is covered by many infrastructural tools, from policies and NDAs that people allowed to view data should read and sign, through network access separation (VPNs, VLANs, access control through credentials), there are also aspects directly related to storage itself: Access Control Lists (ACLs), sharing through secure protocols and in secure networks, working with storage firewall etc.</para></listitem>
+			<listitem><para>Integrity. It must be guaranteed that data is genuine and was not changed by people that are not entrusted. Also, the change should not be introduced by software or hardware, intentionally or not, if it's not supposed to do it. Through whole data lifecycle, only people with sufficient privileges should be allowed to modify data. Unintentional data integrity breach may be a disk failure that breaks data blocks. While with text data it is usually easily spotted, with other data, like sound or video, that may introduce subtle differences from original state. As with all aspects of security, it's also only partially administered by storage. The data integrity is covered by ACLs, but also by ZFS checksumming data blocks to detect corruption. If your setup uses any redundancy, ZFS is able, to great extent, fix those for you using the redundant set. </para></listitem>
+			<listitem><para>Availability. The data should be available at all times it is required and guaranteed. This is probably one of most obvious aspects of storage. At any time that you expect your data should be up, the data should be up. Typically storage redundancy is brought up here (mirror, raidz, raidz2), but also network cards trunking, switch stacking and redundancy of any credentials checking solution you may be using (Active Directory server, primary and secondary, for example).</para></listitem>
+		</itemizedlist>
+		Through this guide I will cover some of those three related to storage platform. I won't however, cover in depth administration of Linux firewall and networking, as those are subjects for separate books. Remember though, while C.I.A triad go introduced in the layout section, it applies to any other aspect of the storage. From writing access policies, through ensuring hardware is working properly, to configuring the system so that it does perform well enough so that data is available to all interested parties at any time guaranteed. 
+	</para>
+</sect2>
+</sect1>
+<sect1 xml:id="planning-8"><title>Types of workload</title>
+	<para><indexterm><primary>L2ARC</primary></indexterm>
+		The workload you are going to run on the storage will play major role in how you should plan the pool layout.
+		<itemizedlist>
+			<listitem><para>If you are going to mostly host databases and they are going to be dominating consumers of the space, L2ARC SSD device may not provide you with special performance gains. Databases are very good at caching their own data and if it so happens that the data fits into database server RAM, ARC will not have much to do. On the other hand, if the data in your database change often and will need to be reread from disks anyway, you are going to have high miss ratio anyway and again L2ARC device will not fulfill its purpose. The snapshotting data is also going to be tricky. Databases need lots more than a snapshot of filesystem to be able to work on the data. This is why they come with their own dump commands - because the full working backup will contain more than what lives in database files usually. Hosting database would usually mean you run the engine on the same host than your ZFS. Again, Database will use the RAM probably more efficiently than the filesystem itself. Consider though, if you will serve data from the same server for other purposes, like CIFS or NFS share, database and filesystem cache may compete for RAM. While they shouldn't affect the system stability, it may adversely affect he performance.</para></listitem>
+			<listitem><para>If you host documents and pictures for office workers, files like procedures, technical documentations, L2ARC device is something to seriously consider. Snapshotting is then a reliable way of capturing data at certain point of time. If your data are not being accesses 24 hours a day and you can have just few seconds of off time, when no one is going to be editing them, a snapshot usually takes about a second to create and will reliably host your data at a specified point of time. You can later mount this snapshot - remember it is read only - and transfer to a backup location not worrying about data integrity.</para></listitem>
+		</itemizedlist>
+		Above all, don't rush it though. You can always add L2ARC later on to your pool, if performance tests prove to be unsatisfactory. 
+	</para>
+	<para>
+		For various workload types various pool configurations are best suited. Lets first introduce terms describing storage performance:
+		<indexterm><primary>IOPS</primary></indexterm>
+		<indexterm><primary>storage bandwidth</primary></indexterm>
+		<itemizedlist>
+			<listitem><para>IOPS - it's Input/Output Operations Per Second. It is ability of hard drive or of whole storage array to write/read number of blocks per second. The IOPS needs maximum block size the disk or storage is able to write/read.</para></listitem>
+			<listitem><para>Storage bandwidth is ability of disk or storage to pass amount of data per second, usually measures in MB per second.</para></listitem>
+		</itemizedlist>
+		Important thing to understand is that various redundancy provide various speeds for both writes and reads. ZFS pool writes are as fast as the slowest vdev and a vdev is as fast as slowest disk in it. It is due to the internal implementation of ZFS.
+	</para>
+	<para>
+		This guide will not delve into IOPS and bandwidth mechanics. If you wish to understand it more, there are reliable online resources you can study, with <ulink url="https://en.wikipedia.org/wiki/IOPS">Wikipedia page</ulink> as a starting point.
+	</para>
+	<para>
+		For your purposes, lets only remember, that mirrored vdevs increase read performance with each added disk. If you have two-way traditional mirrors, then your read performance is doubled. If you create a triple mirrors - it's increased three times. If you have a pool consisting of two vdevs created from three mirrored disks, then your performance can peak to a six times single disk speed. Keep in mind however, that this is given all the read data are spread between both vdevs - not uncommon, since ZFS tries to balance data spread among all vdevs it currently has. Write speed however is going to be another matter. No matter the number of disks on the pool, your performance is going to be equal the speed of slowest disk in the pool. This makes mirrors perfect for streaming or hosting virtual machines images.
+	</para>
+	<para>
+		For RAIDZ however, the read speeds will be much slower than for mirrors. While it is not going to be exactly the speed of a single disk, the increase is going to be much slower than with mirrors. RAIDZ will however outperform mirror in writes, since each disk will only receive a chunk of data and thus the write will be done much faster than with full data set that mirrors must receive.
+	</para>
+</sect1>
+<sect1 xml:id="planning-9"><title>Pool layout</title>
+	<para>
+		We've already presented various pool layout performance. Lets now consider rules of thumb for given redundancy types.
+		<itemizedlist>
+			<listitem><para><indexterm><primary>ZFS</primary><secondary>stripe</secondary></indexterm>There is one pool layout that was not introduced so far and for a good reason. Striped pool is a pool consisting of two or more disks that provide no redundancy. While the total pool capacity equals combined capacity of all disks within the pool, the filesystem will become corrupted and subject to data recovery given loss of a single drive. A rule of thumb for storage is: don't use stripe.</para></listitem>
+			<listitem><para><indexterm><primary>ZFS</primary><secondary>mirror</secondary></indexterm>For mirrored pool a rule of thumb is, to use it only when you really need an incredible read performance or are paranoid about your storage. Reason is that disks don't fail that often and mirrors half your total pool capacity. With triple mirrors capacity will be total disks capacity divided by three. Rule of thumb - use sparingly and with care.</para></listitem>
+			<listitem><para><indexterm><primary>ZFS</primary><secondary>raidz</secondary></indexterm>Rule of thumb for RAIDZ (which are a rough equivalents of RAID-5 and RAID-6) is to go rather for RAIDZ-2. It gives you quite good resilience with conserving a lot of space. There is also another recommendation and from personal experience I'd adhere to it: for RAIDZ pools have 2n+1 disks per vdev. That's three, five, seven etc., but no more than eleven. This is 2n data disks plus 1 disk for parity data. With the smallest set of three disks per vdev you have basically a capacity of mirrored set with lower read performance. Consider starting from five disks per vdev. For RAIDZ-2, the rule is to use 2x+2 disks, which translates to four, six, eight etc and have no more than twelve disk within a vdev. Given this guide considers typical target maximum of twenty disks in the pool (including ZIL and L2ARC), a good idea would be to have two eight disks RAIDZ-2 vdevs in the pool, totalling sixteen disks of total pool capacity of twelve disks. </para></listitem>
+		</itemizedlist>
+	</para>
+</sect1>
+<sect1 xml:id="planning-10"><title>Other components to pay attention to</title>
+	<para>
+		It is important to pay attention to other infrastructure elements. Network would be of special interest. In a small company of few persons a small switch with workstation refit as a storage server both elements may perform without any issue, but once the number of data consumers start to grow, the network may soon turn to be a bottleneck. Switches may not be only limiting factor. Network cards in your storage server may prove to be another one. Also, if you serve your data over VPN from remote location, it may turn out the interlink is too slow. Quite often on a storage performance analysis case we were able to point networking infrastructure as a faulty element. 
+	</para>
+</sect1>
+</chapter>
+<chapter xml:id="installation">
+	<title>Installation</title>
+	<para>
+		In this chapter we will go through basic installation of ZFS modules in your Linux distribution of choice. Most popular distributions have some kind of easy installation support for ZFS. Ubuntu has PPA that allows for quick install and setup. 
+	</para>
+<sect1 xml:id="installation-1"><title>System packages</title>
+	<para>
+		Before going any further, we need to install some packages from standard distribution repositories.
+	</para>
+	<sect2 xml:id="installation-1-1"><title>Virtual Machine</title>
+	<para>
+		Before buying the hardware and running tests on bare metal, you may wish to install and test ZFS within a virtual machine. It is a good idea and I encourage you to do so. You may in a very simple and efficient way get used to administering ZFS pools. You may also check which distribution works better for you. There are no requirements to the virtualization engine. You can use VirtualBox, VMware, KVM, Xen or any other you feel comfortable with. Keep in mind, that the tool you use should be able to provide your guest machine with virtual disks to play with. While you can create pool on files created within the VM, I don't recommend that way of testing it.
+		<note>
+			Bear in mind that virtual machines are not suitable for performance testing. Too many factors will stand in the way of reliable results. 
+		</note>
+	</para>
+	</sect2>
+	<sect2 xml:id="installation-1-2"><title>Ubuntu Server</title>
+		<para>
+			If you are running Ubuntu prior to 15.10, you will need to add special PPA repository:
+	<programlisting>
+				<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo add-apt-repository ppa:zfs-native/stable</userinput>
+<computeroutput>
+	[sudo] password for trochej: 
+	 The native ZFS filesystem for Linux. Install the ubuntu-zfs package.
+
+	Please join this Launchpad user group if you want to show support for ZoL:
+
+	  https://launchpad.net/~zfs-native-users
+
+	Send feedback or requests for help to this email list:
+
+	  http://list.zfsonlinux.org/mailman/listinfo/zfs-discuss
+
+	Report bugs at:
+
+	  https://github.com/zfsonlinux/zfs/issues  (for the driver itself)
+	  https://github.com/zfsonlinux/pkg-zfs/issues (for the packaging)
+
+	The ZoL project home page is:
+
+	  http://zfsonlinux.org/
+	 More info: https://launchpad.net/~zfs-native/+archive/ubuntu/stable
+	Press [ENTER] to continue or ctrl-c to cancel adding it
+
+	gpg: keyring `/tmp/tmp4_wvpmaf/secring.gpg' created
+	gpg: keyring `/tmp/tmp4_wvpmaf/pubring.gpg' created
+	gpg: requesting key F6B0FC61 from hkp server keyserver.ubuntu.com
+	gpg: /tmp/tmp4_wvpmaf/trustdb.gpg: trustdb created
+	gpg: key F6B0FC61: public key "Launchpad PPA for Native ZFS for Linux" imported
+	gpg: Total number processed: 1
+	gpg:               imported: 1  (RSA: 1)
+	OK
+</computeroutput>
+		</programlisting>
+		</para>
+		<para>
+			With Ubuntu 15.10 and later, zfs support packages are already within the standard repository. You will need to install the following packages:
+			<programlisting>
+				<computeroutput>
+				trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo apt-get install zfsutils-linux</userinput>
+			</programlisting>
+			That should install packages required to run zfs and compile appropriate kernel modules for you. You can later confirm they were built and in fact loaded by running <command>lsmod</command>:
+			<programlisting>
+	<computeroutput>trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo lsmod | grep zfs</userinput>
+	<computeroutput>
+	zfs                  2252800  0
+	zunicode              331776  1 zfs
+	zcommon                53248  1 zfs
+	znvpair                90112  2 zfs,zcommon
+	spl                   102400  3 zfs,zcommon,znvpair
+	zavl                   16384  1 zfs
+
+				</computeroutput>
+			</programlisting>
+			You should be now able to create a pool:
+			<programlisting>
+				<computeroutput>
+					trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool create -f datapool \
+					mirror /dev/sdb /dev/sdc \
+					mirror /dev/sdd /dev/sde \
+					mirror /dev/sdf /dev/sdg</userinput>
+	trochej@ubuntuzfs:~$ sudo zpool status
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+		NAME        STATE     READ WRITE CKSUM
+		datapool    ONLINE       0     0     0
+		  mirror-0  ONLINE       0     0     0
+		    sdb     ONLINE       0     0     0
+		    sdc     ONLINE       0     0     0
+		  mirror-1  ONLINE       0     0     0
+		    sdd     ONLINE       0     0     0
+		    sde     ONLINE       0     0     0
+		  mirror-2  ONLINE       0     0     0
+		    sdf     ONLINE       0     0     0
+		    sdg     ONLINE       0     0     0
+
+	errors: No known data errors
+
+			</programlisting>
+		</para>
+	</sect2>
+	<sect2 xml:id="installation-1-3"><title>CentOS</title>
+		<para>
+			You will need some system information tools, not installed by default, for monitoring, troubleshooting and testing of your setup:
+			<programlisting>
+	<computeroutput>
+	[root@localhost ~]#</computeroutput><userinput> yum install sysstat</userinput>
+			</programlisting>
+		</para>
+		<para>
+			Contrary to Ubuntu, CentOS doesn't have zfs packages by default in the repository neither in 6.7 nor 7 version. Thus you need to follow <ulink url="http://zfsonlinux.org/epel.html">ZFS On Linux EPEL</ulink> directions. I have CentOS 6.7 installed. The installation for CentOS 7 is exactly the same, except for package names:
+			<programlisting>
+				<computeroutput>
+	[root@CentosZFS ~]# yum localinstall --nogpgcheck https://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+	[root@CentosZFS ~]# yum localinstall --nogpgcheck http://archive.zfsonlinux.org/epel/zfs-release.el6.noarch.rpm
+	[root@CentosZFS ~]# yum install -y kernel-devel zfs
+				</computeroutput>
+			</programlisting>
+			After some time you should be ready to probe and use zfs modules:
+			<programlisting>
+	[root@CentosZFS ~]# modprobe zfs
+	[root@CentosZFS ~]# lsmod | grep zfs
+	zfs                  2735595  0 
+	zcommon                48128  1 zfs
+	znvpair                80220  2 zfs,zcommon
+	spl                    90378  3 zfs,zcommon,znvpair
+	zavl                    7215  1 zfs
+	zunicode              323046  1 zfs
+			</programlisting>
+		</para>
+		You're now ready to create a pool on your attached disks:
+		<programlisting>
+	[root@CentosZFS ~]# zpool create -f datapool mirror /dev/sdb /dev/sdc mirror /dev/sdd /dev/sde
+	[root@CentosZFS ~]# zpool status
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+		NAME        STATE     READ WRITE CKSUM
+		datapool    ONLINE       0     0     0
+		  mirror-0  ONLINE       0     0     0
+		    sdb     ONLINE       0     0     0
+		    sdc     ONLINE       0     0     0
+		  mirror-1  ONLINE       0     0     0
+		    sdd     ONLINE       0     0     0
+		    sde     ONLINE       0     0     0
+
+	errors: No known data errors
+
+		</programlisting>
+	</sect2>
+</sect1>
+<sect1 xml:id="installation-10"><title>arcstat.pl</title>
+	<para>
+		While it seems not to be a part of ZFS on Linux distribution after I installed packages, arcstat.pl will tell you important things, that will be covered later, in chapter <xref linkend="monitoring" />. Still, I consider this to be as important as other ZFS commands.
+	</para>
+	<para>
+		You will need to start by cloning two github repositories from zfsonlinux project:
+ 		<programlisting>
+  		<userinput>
+	git clone https://github.com/zfsonlinux/linux-kstat.git
+
+	git clone https://github.com/zfsonlinux/arcstat.git
+ 		</userinput>
+ 		</programlisting>
+ 		Next thing is to install their contents:
+ 		<programlisting>
+  		<userinput>
+	cd linux-kstat
+	perl Makefile.PL
+   	make
+   	make test
+   	sudo make install
+
+   	cd ../arcstat
+   	sudo mv arcstat.pl /sbin/
+ 		</userinput>
+ 		</programlisting>
+ 		As you can see, both are installed in a very simple and straightforward fashion. 
+	</para>
+</sect1>	
+</chapter>
+<chapter xml:id="setup"><title>Setup</title>
+<sect1 xml:id="setup-1"><title>Creating a mirrored pool</title>
+	<para>
+		Going through this chapter should be best done at least twice. First, before you buy the hardware and secondly, when you bought it and put together, so it is ready for pool creation.
+	</para>
+	<para>
+		Since I have shown you how to create simple pools in previous chapters, there is no need to demonstrate it now. I am therefore going to jump straight to a bit more involved configurations. Bear in mind however that with single node setup options are limited. 
+	</para>
+	<para>
+		As a reminder, we are not going to cover striped pools at all. Your pool will have absolutely no resiliency in such a setup and you should never consider hosting data you care for on such configuration.
+	</para>
+	<para>
+		Before running any command that may endanger your data, especially in production, ie. <command>zpool create</command> or <command>zpool destroy</command>, confirm that disks you want to use are those that you intended to be used by ZFS.
+	</para>
+	<para>
+		<indexterm><primary>zpool</primary><secondary>create</secondary></indexterm>We have already covered a simple mirrored pool, lets create bigger one, consisting of 10 disks. I am going to follow with <command>zpool status</command> to print resulting pool configuration:
+		<programlisting>
+			<computeroutput>
+  	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool create -f datapool mirror /dev/sdb /dev/sdc \
+  	mirror /dev/sdd /dev/sde \
+  	mirror /dev/sdf /dev/sdg \
+  	mirror /dev/sdh /dev/sdi \
+  	mirror /dev/sdj /dev/sdk
+  </userinput>
+  <computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+	        NAME        STATE     READ WRITE CKSUM
+	        datapool    ONLINE       0     0     0
+	          mirror-0  ONLINE       0     0     0
+	            sdb     ONLINE       0     0     0
+	            sdc     ONLINE       0     0     0
+	          mirror-1  ONLINE       0     0     0
+	            sdd     ONLINE       0     0     0
+	            sde     ONLINE       0     0     0
+	          mirror-2  ONLINE       0     0     0
+	            sdf     ONLINE       0     0     0
+	            sdg     ONLINE       0     0     0
+	          mirror-3  ONLINE       0     0     0
+	            sdh     ONLINE       0     0     0
+	            sdi     ONLINE       0     0     0
+	          mirror-4  ONLINE       0     0     0
+	            sdj     ONLINE       0     0     0
+	            sdk     ONLINE       0     0     0
+
+	errors: No known data errors
+
+ 			</computeroutput>
+ 		</programlisting>
+	</para>
+ 	<para>
+ 		Resulting pool total capacity equals to half the capacity of all disks in the pool:
+ 	<programlisting>
+ 		<computeroutput>
+ 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool list</userinput>
+ 	<computeroutput>
+	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	datapool  9.92G    64K  9.92G         -     0%     0%  1.00x  ONLINE  -
+	</computeroutput>
+ 	</programlisting>
+ 		The pool already is mounted at /datapool and contains a filesystem called datapool, as you can see in the following output:
+
+ 		<programlisting>
+ 			<computeroutput>
+ 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zfs list</userinput>
+ 	<computeroutput>
+	NAME       USED  AVAIL  REFER  MOUNTPOINT
+	datapool    58K  9.77G    19K  /datapool
+	</computeroutput>
+ 		</programlisting>
+ 	</para>
+</sect1>
+<sect1 xml:id="setup-2"><title>Creating RAID-Z pool</title>
+<para>
+	<note><indexterm><primary>zpool</primary><secondary>destroy</secondary></indexterm>
+		I am reusing the same disks in all examples. Before creating a new pool on them, I am going to run <command>zpool destroy</command> on the pool. It does exactly that: marks pool as destroyed and disks as free to be used by other ZFS setups. When ZFS adds a disk to the pool, it labels it with its own GUID and some information that allow ZFS to be self contained. You may move the pool around, export it from current server, reinstall the server to FreeBSD and import the same pool without a problem. Thus, if you decide you no longer need the pool and try to reuse disks for other configuration, <command>zpool</command> will refuse to add it to a new one without using <option>-f</option> switch. 
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool destroy datapool</userinput>
+	<computeroutput>[sudo] password for trochej:</computeroutput>
+		</programlisting>
+	</note>
+	The virtual machine I am working with has 12 disks for use as a storage:
+	<programlisting>
+		<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>ls -ahl /dev/sd[a-z]</userinput>
+	<computeroutput>
+	brw-rw---- 1 root disk 8,   0 Feb 12 21:59 /dev/sda
+	brw-rw---- 1 root disk 8,  16 Feb 15 17:43 /dev/sdb
+	brw-rw---- 1 root disk 8,  32 Feb 15 17:43 /dev/sdc
+	brw-rw---- 1 root disk 8,  48 Feb 15 17:43 /dev/sdd
+	brw-rw---- 1 root disk 8,  64 Feb 15 17:43 /dev/sde
+	brw-rw---- 1 root disk 8,  80 Feb 15 17:43 /dev/sdf
+	brw-rw---- 1 root disk 8,  96 Feb 15 17:43 /dev/sdg
+	brw-rw---- 1 root disk 8, 112 Feb 15 17:43 /dev/sdh
+	brw-rw---- 1 root disk 8, 128 Feb 15 17:43 /dev/sdi
+	brw-rw---- 1 root disk 8, 144 Feb 15 17:43 /dev/sdj
+	brw-rw---- 1 root disk 8, 160 Feb 15 17:43 /dev/sdk
+	brw-rw---- 1 root disk 8, 176 Feb 12 21:59 /dev/sdl
+	brw-rw---- 1 root disk 8, 192 Feb 12 21:59 /dev/sdm
+		</computeroutput>
+	</programlisting>
+	<literal>/dev/sda</literal> is a system disk, that leaves me with disks from <literal>/dev/sdb</literal> to <literal>/dev/sdm</literal>. It means twelve disk for use as a storage. Lets create a RAID-Z pool following previously noted best practice of 5 disk per vdev:
+	<programlisting>
+		<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool create datapool \
+		raidz /dev/sdb /dev/sdc \
+		/dev/sdd /dev/sde /dev/sdf \
+		raidz /dev/sdg /dev/sdh \
+		/dev/sdi /dev/sdj /dev/sdk</userinput>
+	<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+	        NAME        STATE     READ WRITE CKSUM
+	        datapool    ONLINE       0     0     0
+	          raidz1-0  ONLINE       0     0     0
+	            sdb     ONLINE       0     0     0
+	            sdc     ONLINE       0     0     0
+	            sdd     ONLINE       0     0     0
+	            sde     ONLINE       0     0     0
+	            sdf     ONLINE       0     0     0
+	          raidz1-1  ONLINE       0     0     0
+	            sdg     ONLINE       0     0     0
+	            sdh     ONLINE       0     0     0
+	            sdi     ONLINE       0     0     0
+	            sdj     ONLINE       0     0     0
+	            sdk     ONLINE       0     0     0
+
+	errors: No known data errors
+
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool list</userinput>
+	<computeroutput>
+	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	datapool  19.8G   106K  19.7G         -     0%     0%  1.00x  ONLINE  -
+	</computeroutput>
+	</programlisting>
+</para>
+<para>
+	Setup above can withstand loosing a single disk per each vdev at once. With two disks unused, you can add so called <indexterm><primary>ZFS</primary><secondary>hot spare</secondary></indexterm> <literal>hot-spares</literal>. Hot spares are idle disks added to a pool for replacement in case any active disk in a pool fails. The replacement is done automatically by ZFS. The hot spare mechanism isn't intelligent, so it can cause resiliency issues if you care for physical layout of your pool - spreading you pool's disks in different jbods, so that you can loose whole chassis and still retain pool and data.
+	</para>
+	<para>
+		In a simple single server setup the problem above isn't of that significance. You should be totally safe adding the spare disk to a pool. I'll demonstrate it in <xref linkend="advsetup" /> chapter.
+	</para>
+</sect1>
+<sect1 xml:id="setup-3"><title>Creating RAID-Z2 pool</title>
+	<para>Lets now walk through creating a RAID-Z2 pool, which will consist of 12 disks spread evenly between two vdevs:
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool create -f datapool \
+		raidz2 /dev/sdb /dev/sdc /dev/sdd \
+		/dev/sde /dev/sdf /dev/sdg \
+		raidz2 /dev/sdh /dev/sdi /dev/sdj \
+		/dev/sdk /dev/sdl /dev/sdm</userinput>
+		<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+	        NAME        STATE     READ WRITE CKSUM
+	        datapool    ONLINE       0     0     0
+	          raidz2-0  ONLINE       0     0     0
+	            sdb     ONLINE       0     0     0
+	            sdc     ONLINE       0     0     0
+	            sdd     ONLINE       0     0     0
+	            sde     ONLINE       0     0     0
+	            sdf     ONLINE       0     0     0
+	            sdg     ONLINE       0     0     0
+	          raidz2-1  ONLINE       0     0     0
+	            sdh     ONLINE       0     0     0
+	            sdi     ONLINE       0     0     0
+	            sdj     ONLINE       0     0     0
+	            sdk     ONLINE       0     0     0
+	            sdl     ONLINE       0     0     0
+	            sdm     ONLINE       0     0     0
+
+	errors: No known data errors
+
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool list</userinput>
+	<computeroutput>
+	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	datapool  23.8G   152K  23.7G         -     0%     0%  1.00x  ONLINE  -
+	</computeroutput>
+		</programlisting>
+	</para>
+</sect1>
+<sect1 xml:id="setup-10"><title>Forcing operations</title>
+<para>
+	There are situations where you will want to conduct two operations with very final consequences: destroying a pool or forcing an operation on a pool, ie. create. You may see lots of it especially  in first stages, when you will be learning the ZFS administration..
+</para>
+<para>
+	Best practice is to destroy a pool before reusing its components, but there are situations when you may end up with a bunch of healthy disks disposed of by someone else. They may contain disks previously in a ZFS pool, but not enough of them to import it and destroy properly. 
+	</para>
+	<para>
+		For such occasions there is the <option>-f</option> switch, meaning <emphasis>force</emphasis>.
+	</para>
+</sect1>
+</chapter>
+<chapter xml:id="advsetup"><title>Advanced setup</title>
+<sect1 xml:id="advsetup-1"><title>Hot spares</title>
+<indexterm><primary>ZFS</primary><secondary>hot spare</secondary></indexterm>
+	<para>
+		As mentioned previously, you can assign a hot spare disk to your pool. In case ZFS pool looses a disk, the spare will be automatically attached and <indexterm><primary>resilvering</primary></indexterm> resilvering process will be started.
+	</para>
+	<para>
+		Lets consider a mirrored pool consisting of two vdevs two drives each:
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+		NAME        STATE     READ WRITE CKSUM
+		datapool    ONLINE       0     0     0
+		  mirror-0  ONLINE       0     0     0
+		    sdb     ONLINE       0     0     0
+		    sdc     ONLINE       0     0     0
+		  mirror-1  ONLINE       0     0     0
+		    sdd     ONLINE       0     0     0
+		    sde     ONLINE       0     0     0
+
+	errors: No known data errors
+			</computeroutput>
+		</programlisting>
+		You add a <indexterm><primary>hot spare</primary><secondary>add</secondary></indexterm> hot spare device by running <command>zpool add</command><option>spare</option> command:
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool add datapool -f spare /dev/sdf</userinput>
+		</programlisting>
+		Confirm the disk has been added by querying the pool's status:
+<programlisting>
+	<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status datapool</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+		NAME        STATE     READ WRITE CKSUM
+		datapool    ONLINE       0     0     0
+		  mirror-0  ONLINE       0     0     0
+		    sdb     ONLINE       0     0     0
+		    sdc     ONLINE       0     0     0
+		  mirror-1  ONLINE       0     0     0
+		    sdd     ONLINE       0     0     0
+		    sde     ONLINE       0     0     0
+		spares
+		  sdf       AVAIL   
+
+	errors: No known data errors
+			</computeroutput>
+		</programlisting>
+	</para>
+	<para>
+		<indexterm><primary>hot spare</primary><secondary>remove</secondary></indexterm>
+		In a case you'd wish to remove the spare from the pool, use <command>zpool remove</command> command:
+	<programlisting>
+		<computeroutput>
+			trochej@ubuntuzfs:~$ sudo zpool remove datapool /dev/sdf
+		</computeroutput>
+	</programlisting>
+	As previously, you can use <command>zpool status</command> to confirm the change.
+	</para>
+</sect1>
+<sect1 xml:id="advsetup-2"><title>ZIL device</title>
+</sect1>
+<sect1 xml:id="advsetup-3"><title>L2ARC device (cache)</title>
+</sect1>
+<sect1 xml:id="advsetup-4"><title>Quotas</title>
+</sect1>
+<sect1 xml:id="advsetup-5"><title>Reservations</title>
+</sect1>
+<sect1 xml:id="advsetup-6"><title>Snapshots and clones</title>
+</sect1>
+<sect1 xml:id="advsetup-7"><title>ACL-s</title>
+</sect1>
+<sect1 xml:id="advsetup-8"><title>Pool properties</title>
+</sect1>
+<sect1 xml:id="advsetup-9"><title>ZFS Send and Receive</title>
+</sect1>
+<sect1 xml:id="advsetup-10"><title>Passwordless ZFS commands</title>
+	<para>
+		For both monitoring that will be covered later on and for day to day operations, it is useful to be able to run some commands without typing in your password with every sudo invocation. To that end, I have prepared a sudoers file based on a sudoers file installed by default with ZOL packages on Fedora. 
+	</para>
+	<para>
+		First assumption is, you don't want everyone to run those commands passwordless. Create a special system group to easily add the right to any system operator:
+		<programlisting>
+  		<userinput>
+	sudo groupadd zfsadmin
+ 		</userinput>
+ 		</programlisting>
+ 		Then add a user to this group (my user login is trochej):
+ 		<programlisting>
+  		<userinput>
+	usermod -ag zfsadmin trochej
+ 		</userinput>
+ 		</programlisting>
+ 		Place a file from listing below, or download it from <ulink url="http://completelyfake.eu/zfs-sudoers">my site</ulink> and place in <literal>/etc/sudoers.d/</literal> :
+		<programlisting>
+  		
+	# Allow read-only ZoL commands to be called through sudo
+	# without a password. Remove the first '#' column to enable.
+	#
+	# CAUTION: Any syntax error introduced here will break sudo.
+	#
+	# Cmnd alias specification
+	Cmnd_Alias C_ZFS = \
+	  /sbin/zfs "", /sbin/zfs help *, \
+	  /sbin/zfs get, /sbin/zfs get *, \
+	  /sbin/zfs list, /sbin/zfs list *, \
+	  /sbin/zpool "", /sbin/zpool help *, \
+	  /sbin/zpool iostat, /sbin/zpool iostat *, \
+	  /sbin/zpool list, /sbin/zpool list *, \
+	  /sbin/zpool status, /sbin/zpool status *, \
+	  /sbin/zpool upgrade, /sbin/zpool upgrade -v, \
+	  /sbin/arcstat.pl
+
+	Runas_Alias R_ROOT = root
+
+	# allow users in zfsadmin group to use basic read-only ZFS commands
+	%zfsadmin ALL = (R_ROOT) NOPASSWD: C_ZFS
+ 		
+ 		</programlisting>
+ 		The <literal>arcstat.pl</literal> script was added in previous steps.
+	</para>
+	<para>
+		After placing it in <literal>/etc/sudoers.d/</literal> run visudo command and make sure the last line is:
+ 		<programlisting>
+
+	#includedir /etc/sudoers.d
+
+ 		</programlisting>
+ 		Last thing to do, is setting up proper file attributes:
+ 		<programlisting>
+		<userinput>
+	chmod 0440 /etc/sudoers.d/zfs-sudoers
+ 		</userinput>
+ 		</programlisting>
+	</para>
+	<para>
+		 Next time user trochej logs in, they will be able to run informational zfs and zpool subcommands without need to type in their password. Other commands, that change filesystem and pool state, still need confirmation by typing in their password.
+	</para>
+</sect1>
+</chapter>
+
+
+<chapter xml:id="sharing"><title>Sharing</title>
+<sect1 xml:id="sharing-1"><title>NFS - builtin</title>
+</sect1>
+<sect1 xml:id="sharing-2"><title>NFS - Linux server</title>
+</sect1>
+<sect1 xml:id="sharing-3"><title>CIFS - builtin</title>
+</sect1>
+<sect1 xml:id="sharing-4"><title>CIFS - the SAMBA server</title>
+</sect1>
+<sect1 xml:id="sharing-5"><title>Other sharing protocols</title>
+	<para>
+		FC, FCoE, iSCSI.
+	</para>
+</sect1>
+</chapter>
+
+
+<chapter xml:id="accounting"><title>Space accounting</title>
+<sect1 xml:id="accounting-1"><title>Understanding space accounting in ZFS</title>
+<para>
+	Due to rich feature set, some relying on filesystem organization, the likes of clones, snapshots and compression, space monitoring needs to be done differently from traditional Linux filesystems. The usual <command>df <option>-h</option></command> command known to each Linux server administrator is no longer sufficient and may even be misleading. You should learn to use two commands and understand their arguments and output to keep track of your free space: <command>sudo zpool list</command> and <command>sudo zfs list</command>, which, on my home workstation commands will produce output as below:
+ 	<programlisting>
+  	<computeroutput>
+  	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
+  	<computeroutput>
+	NAME   SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	data  2,72T   147G  2,58T         -     3%     5%  1.00x  ONLINE  -
+	</computeroutput>
+	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list</userinput>
+	<computeroutput>
+	NAME          USED  AVAIL  REFER  MOUNTPOINT
+	data          147G  2,53T    96K  /data
+	data/datafs   147G  2,53T   147G  /mnt/data
+	</computeroutput>
+	</programlisting>
+	This may come as a surprise, but the list about is not complete. This is because list by default omits snapshots. Remember, snapshots consume space increasingly with time, as data change on the snapshotted system. One of very often issues raised by new ZFS storage operators was that they were unable to delete data due to lack of space. They were baffled by both the fact, that deleting data wouldn't increase the available space and that consumed space in ZFS list wouldn't add up to total space available int the pool.
+</para>
+<para>
+	Lets consider a situation when you have a 3 TB pool.
+ 	<programlisting>
+  	<userinput>
+	sudo zpool create datapool mirror /dev/sdb /dev/sdc
+	sudo zfs create datapool/data
+ 	</userinput>
+ 	</programlisting>
+ 	After successful import of 2 TB of backed up data, you decide to create snapshot, so that users mistakenly deleting data wouldn't make you rerun the backup restore.
+ 	 <programlisting>
+  	<userinput>
+	sudo zfs snapshot datapool/data@after-backup-restore
+ 	</userinput>
+ 	</programlisting>
+ 	Take a note that running this snapshot is instantaneous and takes no disk space initially.
+ </para>
+ <para>
+ 	As it sometimes happen, just after you ran the snapshot, a user with very wide access rights (CEO maybe?), really deletes whole 2 TB of data. But, the delete job stops short of 1 TB with information, that it cannot delete more, due to the lack of space. How is that even possible? Answer is: the snapshot.
+</para>
+<para>
+	Lets first observe filesystem on my workstation:
+	<programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list</userinput>
+	<computeroutput>
+	NAME          USED  AVAIL  REFER  MOUNTPOINT
+	data          134G  2,55T    96K  /data
+	data/datafs   134G  2,55T   134G  /mnt/data
+ 	</computeroutput>
+ 	</programlisting>
+ 	Now, let me create a snapshot there:
+	 <programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs snapshot data/datafs@testsnapshot</userinput>
+	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
+	<computeroutput>
+	NAME                       USED  AVAIL  REFER  MOUNTPOINT
+	data                       134G  2,55T    96K  /data
+	data/datafs                134G  2,55T   134G  /mnt/data
+	data/datafs@testsnapshot      0      -   134G  -
+ 	</computeroutput>
+ 	</programlisting>
+		Let me now upload a CentOS 7 GB iso file to the <literal>/mnt/data</literal>:
+ 	 <programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
+	<computeroutput>
+	NAME                       USED  AVAIL  REFER  MOUNTPOINT
+	data                       141G  2,54T    96K  /data
+	data/datafs                141G  2,54T   134G  /mnt/data
+	data/datafs@testsnapshot  7,14G      -   134G  -
+ 	</computeroutput>
+ 	</programlisting>
+ 	Notice that the snapshot size has increased up to the newly introduced data. Let me now delete whole directory containing archived ISOs:
+ 	 <programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
+	<computeroutput>
+	NAME                       USED  AVAIL  REFER  MOUNTPOINT
+	data                       141G  2,54T    96K  /data
+	data/datafs                141G  2,54T   109G  /mnt/data
+	data/datafs@testsnapshot  32,0G      -   134G  -
+ 	</computeroutput>
+ 	</programlisting>
+ 	What you will see is that while the REFER size for the data/datafs ZFS filesystem has shrunk, the overall USED stays the same and snapshot size has increased up to 32 GB. For comparison, lets have a look at the <command>df <option>-h</option></command> command (I have removed non-ZFS filesystems from output for clarity:
+
+ 	 <programlisting>
+  	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>df -h</userinput>
+	<computeroutput>
+	Filesystem      Size  Used Avail Use% Mounted on
+	data            2,6T  128K  2,6T   1% /data
+	data/datafs     2,7T  109G  2,6T   5% /mnt/data
+ 	</computeroutput>
+ 	</programlisting>
+ 	Let me now remove some more data from datafs, just to increase the size of the snapshot:
+ 	<programlisting>
+ 	<computeroutput>
+ 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
+ 	<computeroutput>
+	NAME                       USED  AVAIL  REFER  MOUNTPOINT
+	data                       141G  2,54T    96K  /data
+	data/datafs                141G  2,54T  23,3G  /mnt/data
+	data/datafs@testsnapshot   117G      -   134G  -
+
+	trochej@madchamber:~$</computeroutput> <userinput>df -h</userinput>
+	<computeroutput>
+	Filesystem      Size  Used Avail Use% Mounted on
+
+	data            2,6T  128K  2,6T   1% /data
+	data/datafs     2,6T   24G  2,6T   1% /mnt/data
+ 	</computeroutput>
+ 	</programlisting>
+ 	As you may notice, there is not much to be gleaned from the du command. It more or less tracks the space usage, but it tells nothing about the pattern. The zfs list on the other hand, tells you quite a lot. By this output alone you can see, that while your filesystem used space has shrunk, the overall used stays the same, it's just moved into another dataset's location. </para>
+ 	<para>
+ 		The <command>zfs</command> can provide you with even deeper understanding of how the space is distributed among your data. And while it's not very interesting in the case of the small experiment I've been running so far, I'll provide you with more complicated examples in just a moment. First, howewer, lets check out another option to the <command>zfs list</command>:
+ 	 	 <programlisting>
+  			<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all -o space</userinput>
+	<computeroutput>
+	NAME                      AVAIL   USED  USEDSNAP  USEDDS  USEDREFRESERV  USEDCHILD
+	data                      2,54T   141G         0     96K              0       141G
+	data/datafs               2,54T   141G      117G   23,3G              0          0
+	data/datafs@testsnapshot      -   117G         -       -              -          -
+ 	</computeroutput>
+ 	</programlisting>
+ 	More detailed explanation of -o space follows in next section. 
+</para>
+<para>
+	It should be now pretty clear where the issue with data deletion came from. Since the 3TB pool is capable of keeping more or less the amount of data (modulo data compression), introducing deletion of 2 TB of data on a filesystem that already holds 2 TB results in pool space running out, since the pool needs to add data to snapshot as the user keeps removing them.
+</para>
+<para>
+	As a side note, I was whole the time working on my production data, and while I keep backups, I was confident enough in the snapshot to let me do this:
+	<programlisting>
+	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs rollback data/datafs@testsnapshot</userinput>
+	<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
+	<computeroutput>
+	NAME                       USED  AVAIL  REFER  MOUNTPOINT
+	data                       134G  2,55T    96K  /data
+	data/datafs                134G  2,55T   134G  /mnt/data
+	data/datafs@testsnapshot     8K      -   134G  -
+	</computeroutput>
+	</programlisting>
+</para>
+</sect1>
+<sect1 xml:id="accounting-2"><title>zfs -o space</title>
+<para><command>zfs list <option>-o space</option></command> command and its output is important enough to warrant it a separate subsection in this guide. 
+</para>
+<para>
+The example we went through above is pretty simple. Not much is happening on this pool and not many additional features were used. I will then create a sample ZFS pool using files storage (files emulating real block devices) and we will play few scenarios to see how setting up various ZFS properties affects available space and the zfs -o space output.
+</para>
+<para>
+	But first, lets go through all the columns in the output and what they mean to operator:
+	<itemizedlist>
+		<listitem><para>AVAIL - available - total available space in the filesystem</para></listitem>
+		<listitem><para>USED - used - total used space in the filesystem</para></listitem>
+		<listitem><para>USEDSNAP - usedbysnapshots – the disk space used by snapshots of the dataset. This space would be freed once all snapshots of the dataset are destroyed. Since multiple snapshots can reference the same blocks, this amount may not be equal to the sum of all snapshots used space</para></listitem>
+		<listitem><para>USEDDS - usedbydataset – the disk space used by the dataset itself. This disk space would be freed if: all snapshots and refreservation s of this dataset were destroyed and then the dataset itself would be destroyed</para></listitem>
+		<listitem><para>USEDREFRESERV - usedbyrefreservation – the disk space used by a refreservation set on the dataset. This space would be freed once refreservation is removed</para></listitem>
+		<listitem><para>USEDCHILD - usedbychildren – the disk space used by children of the dataset. This space would be freed after destroying children of given dataset</para></listitem>
+	</itemizedlist>
+	To calculate the USED property by hand, follow equation below:
+	<literal>USED = USEDCHILD + USEDDS + USEDREFRESERV + USEDSNAP</literal>
+</para>
+	<para>
+		The <command>zfs <option>-o space</option></command> is not very informative and interesting in the very simple example above. Consider however a following configuration:
+		<itemizedlist>
+			<listitem><para>A pool named datapool with RAID-Z2 redundancy</para></listitem>
+			<listitem><para>5 filesystems within, two of which have regular snapshots taken each hour and retained for two weeks. Every Saturday a snapshot is taken, retained for a month.</para></listitem>
+			<listitem><para>2 of filesystems above have quota set</para></listitem>
+			<listitem><para>1 filesystem have set reservations</para></listitem>
+			<listitem><para>1 zvol created</para></listitem>
+		</itemizedlist>
+		Lets the this configuration in print:
+		<programlisting>
+	trochej@ubuntuzfs:~$ sudo zpool list
+	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	datapool  23.8G  5.37G  18.4G         -    14%    22%  1.00x  ONLINE  -
+		</programlisting>
+		So the pool says, there is above 18 Gigabytes space free in the pool. Lets look closer:
+		<programlisting>
+	trochej@ubuntuzfs:~$ sudo zfs list
+	NAME              USED  AVAIL  REFER  MOUNTPOINT
+	datapool         13.2G  2.41G  34.0K  /datapool
+	datapool/first   3.58G  6.83G  3.58G  /datapool/first
+	datapool/five    50.0K  2.41G  32.0K  /datapool/five
+	datapool/fourth  50.0K  2.41G  32.0K  /datapool/fourth
+	datapool/second  50.0K  2.41G  32.0K  /datapool/second
+	datapool/third   50.0K  2.41G  32.0K  /datapool/third
+	datapool/vol01   5.16G  7.57G  16.0K  -
+		</programlisting>
+		But not exactly. Shouldn't AVAIL number be the same as FREE in <command>zpool list</command> output? After all it is being said, ZFS filesystems can grow up to the pool's capacity. Lets list <emphasis>all</emphasis> datasets then:
+		<programlisting>
+	trochej@ubuntuzfs:~$ sudo zfs list -t all
+	NAME                               USED  AVAIL  REFER  MOUNTPOINT
+	datapool                          13.2G  2.41G  34.0K  /datapool
+	datapool/first                    3.58G  6.84G  3.58G  /datapool/first
+	datapool/first@2016-02-17-14:55   18.0K      -  32.0K  -
+	datapool/first@2016-02-17-15:04       0      -  3.58G  -
+	datapool/five                     50.0K  2.41G  32.0K  /datapool/five
+	datapool/five@2016-02-17-14:55    18.0K      -  32.0K  -
+	datapool/fourth                   50.0K  2.41G  32.0K  /datapool/fourth
+	datapool/fourth@2016-02-17-14:55  18.0K      -  32.0K  -
+	datapool/second                   50.0K  2.41G  32.0K  /datapool/second
+	datapool/second@2016-02-17-14:55  18.0K      -  32.0K  -
+	datapool/third                    50.0K  2.41G  32.0K  /datapool/third
+	datapool/third@2016-02-17-14:55   18.0K      -  32.0K  -
+	datapool/vol01                    5.16G  7.57G  16.0K  -
+		</programlisting>
+		Okay. So there are snapshots in play, so it might have taken some of the capacity, but still, why numbers are different among the datasets? Lets first explain the <literal>REFER</literal> column in <command>zfs list</command> output. It states, how much space the dataset is keeping references to. See that in the output above:
+		<programlisting>
+	datapool/first@2016-02-17-15:04       0      -  3.58G  -
+		</programlisting>
+		<literal>USED</literal> column is zero, but <literal>REFER</literal>is above 3.5G. That is typical to snapshots. Since the creation of the snapshot no change was introduced to the filesystem datapool/first, thus snapshot does not use any space at the moment. But it keeps references to 3.5 G of data that datapool/first contained at the time of snapshotting. Lets make it use some space now by removign a piece of data I copied over to the datapool:
+		<programlisting>
+	trochej@ubuntuzfs:~$ rm /datapool/first/Fedora-Live-KDE-x86_64-23-10.iso 
+		</programlisting>
+	Check how it looks like right now:
+		<programlisting>
+	trochej@ubuntuzfs:~$ sudo zfs list
+	NAME                               USED  AVAIL  REFER  MOUNTPOINT
+	datapool                          14.7G   930M  34.0K  /datapool
+	datapool/first                    9.50G  4.91G   741M  /datapool/first
+		</programlisting>
+		So, the filesystem datapool/first consumes 9.5G of space, fur references 741M only? Where is the rest of the claimed space consumption? First, run zfs list -t all, to see not only filesystems, but snapshots also:
+		<programlisting>
+	trochej@ubuntuzfs:~$ sudo zfs list -t all
+	NAME                               USED  AVAIL  REFER  MOUNTPOINT
+	datapool                          14.7G   930M  34.0K  /datapool
+	datapool/first                    9.50G  4.91G   741M  /datapool/first
+	datapool/first@2016-02-17-14:55   18.0K      -  32.0K  -
+	datapool/first@2016-02-17-15:04   18.0K      -  3.58G  -
+	datapool/first@2016-02-17-15:22   1.20G      -  5.50G  -
+	datapool/first@2016-02-17-15:27       0      -   741M  -
+
+	trochej@ubuntuzfs:~$ ls -ahl /datapool/first/
+	total 741M
+	drwxr-xr-x 2 trochej trochej    3 Feb 17 15:25 .
+	drwxr-xr-x 7 trochej trochej    7 Feb 17 14:51 ..
+	-rw-r----- 1 trochej trochej 741M Feb 17 15:21 FreeBSD-11.0-CURRENT-amd64-20151130-r291495-disc1.iso
+		</programlisting>
+		Okay. So the filesystem holds 741M of data, but its snapshots consume 1.20GB of space. That's more like it. Still, where's the rest of my space gone?
+		<programlisting>
+	trochej@ubuntuzfs:~$ sudo zfs list -t all -o space
+	NAME                              AVAIL   USED  USEDSNAP  USEDDS  USEDREFRESERV  USEDCHILD
+	datapool/first                    4.91G  9.50G     4.78G    741M             4G          0
+	datapool/first@2016-02-17-14:55       -  18.0K         -       -              -          -
+	datapool/first@2016-02-17-15:04       -  18.0K         -       -              -          -
+	datapool/first@2016-02-17-15:22       -  1.20G         -       -              -          -
+		</programlisting>
+		The output is cut out for brevity. The datapool/first filesystem consumes 4.78G in snapshots. 4G is used by refreservation property set on the filesystem, giving it 4G of free space at cost of other filesystems. Reservations have been explained in <xref linkend="advsetup-5" />.
+
+	</para>
+</sect1>
+</chapter>
+
+
+<chapter xml:id="monitoring"><title>Monitoring</title>
+	<para>
+		Your success in hosting DIY storage will greatly depend on your ability to monitor the storage. You have very rich choice of software, from opensource free like <ulink url="https://www.nagios.org/">Nagios</ulink> or it's fork <ulink url="https://www.icinga.org/">Icinga</ulink>, <ulink url="http://www.zabbix.com/">Zabbix</ulink> to completely commercial, like <ulink url="http://www-03.ibm.com/software/products/en/ibm-workload-automation">IBM Tivoli</ulink> or <ulink url="http://www.accelops.com/">AccelOps</ulink>. A good comparison guide is always available <ulink url="https://en.wikipedia.org/wiki/Comparison_of_network_monitoring_systems">on Wikipedia</ulink>. If you still don't have a monitoring solution, implement it. If your company's infrastructure is still in its infancy, plan for monitoring and implement it as one of first services. This may be cumbersome, but it really pays off later, when the infrastructure matures. The later you start implementing monitoring, the more work you need to put into it.
+	</para>
+	<para>
+		I will show implementing ZFS monitoring using popular monitoring suites:
+		<itemizedlist>
+			<listitem><para><ulink url="https://www.icinga.org/">Icinga</ulink></para></listitem>
+			<listitem><para><ulink url="https://www.zabbix.com/">Zabbix</ulink></para></listitem>
+			<listitem><para><ulink url="http://www.opennms.org/">OpenNMS</ulink></para></listitem>
+		</itemizedlist>
+		Icinga configuration should be applicable to Nagios without any modifications.
+	</para>
+	<sect1 xml:id="monitoring-1"><title>What to monitor?</title>
+	<para>
+		One of things to monitor is state of your Aadaptive Replacement Cache (ARC). It is your read cache for the filesystem. The more it stores in RAM, the lower the miss ratio, the better your performance - you will satisfy more requests from memory, totally omitting the need for touching platters of your disks.
+		<programlisting>
+		<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo arcstat.pl</userinput>
+	<computeroutput>
+    time        read  miss  miss%  dmis  dm%  pmis  pm%  mmis  mm%  arcsz     c  
+	10:21:15     0     0      0     0     0     0    0     0    0    8.5G   8.5G 
+		</computeroutput>
+		</programlisting>
+	</para>
+	</sect1>
+</chapter>
+
+
+<chapter xml:id="maintenance"><title>Storage maintenance</title>
+<sect1 xml:id="maintenance-1"><title>Aspects of maintenance</title>
+<para>
+	Storage maintenance, especially DIY one, is a very wide subject. It is both technical and non-technical. In this chapter I will try to cover as much technical side as possible and as much non-technical as is sane. Surely, real non-technical side warrants a separate book on its own.
+</para>
+<para>
+	Typical maintenance tasks start with monitoring the storage. You need to cover hardware health, software updates for your distribution, security issues, atypical access logs (intrusion detection? access privileges breach?). Many of those are outside the scope of the book.
+</para>
+<para>
+	Monitoring is already covered in the chapter <xref linkend="monitoring" />. 
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-2"><title>Working with hot spares</title>
+<indexterm><primary>hot spare</primary><secondary>working with</secondary></indexterm>
+<para>
+	You've seen how to add a hot spare to the pool in <xref linkend="advsetup" /> chapter. But there is a bit more to them than that. 
+</para>
+</sect1>
+<sect1 xml:id="maintenance-3"><title>Replacing bad drive</title>
+	<para>
+		Replacing a drive.
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-4"><title>Recovering destroyed pool</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-5"><title>Expanding pool</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-6"><title>Increasing capacity by disks replacement</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-7"><title>Turning single disk pool into mirrored</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-8"><title>Turning two-way mirror into three-way mirror</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-9"><title>Turning devices online and taking them offline</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-10"><title>Exporting and importing pools</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-11"><title>Manual scrub</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-12"><title>Ditto blocks</title>
+	<para>
+	</para>
+</sect1>
+</chapter>
+
+
+<chapter xml:id="tracing"><title>Troubleshooting</title>
+<sect1 xml:id="tracing-1"><title>I got performance issues. Where to start?</title>
+	<para>
+		Tracing performance issues may prove tricky. There are many items that need to be taken into account while discussing performance and not many of them are easy to capture and quantify. From users' experience and perception of what's low and fast, to the various elements between storage disks and pool space consumers, there is whole land of questions that need to be asked and many of them don't have an easy answer. Fortunately for you, your setup is small and the amount of things to check limited.
+	</para>
+	<para>
+	For an rough overview of I/O on your pool, run <command>zpool iostat</command>:
+	<programlisting>
+[root@localhost ~]# zpool iostat
+               capacity     operations    bandwidth
+pool        alloc   free   read  write   read  write
+----------  -----  -----  -----  -----  -----  -----
+datapool    68.5K  3.97G      0      0      0     12
+
+		</programlisting>
+
+	For more detailed breakthrough call <command>zpool iostat</command> <option>-v</option>:
+		<programlisting>
+[root@localhost ~]# zpool iostat -v
+capacity     operations    bandwidth
+pool        alloc   free   read  write   read  write
+----------  -----  -----  -----  -----  -----  -----
+datapool    68.5K  3.97G      0      0      0     12
+  mirror      26K  1.98G      0      0      0      4
+    sdb         -      -      0      0     62    198
+    sdc         -      -      0      0     62    198
+  mirror    42.5K  1.98G      0      0      0      8
+    sdd         -      -      0      0     62    202
+    sde         -      -      0      0     62    202
+----------  -----  -----  -----  -----  -----  -----
+	</programlisting>
+<programlisting>
+	[root@localhost ~]# vmstat
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+ 2  0      0 3018652   1832 711616    0    0    60    27   21   72  0  0 99  0  0
+[root@localhost ~]# iostat
+Linux 3.10.0-327.4.5.el7.x86_64 (localhost.localdomain) 	02/12/2016 	_x86_64_	(1 CPU)
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0.21    0.00    0.18    0.15    0.00   99.46
+
+Device:            tps    kB_read/s    kB_wrtn/s    kB_read    kB_wrtn
+sda               2.83        58.99        26.55     549131     247144
+sdb               0.05         0.32         0.17       2984       1545
+sdc               0.04         0.27         0.17       2516       1545
+sdd               0.04         0.27         0.17       2520       1571
+sde               0.04         0.27         0.17       2508       1571
+dm-0              0.02         0.17         0.00       1544          0
+dm-1              2.64        52.92        19.94     492670     185663
+</programlisting>
+
+	</para>
+</sect1>
+<sect1 xml:id="tracing-10"><title>zdb</title>
+	<para>
+		ZFS comes with a nice command that is largely undocumented. You wouldn't use it very often, but in some rare occasions it proved quite useful in the field and may gain you additional insight into inner workings of your pool: <indexterm><primary><command>zdb</command></primary></indexterm>. The output of the command looks similar to:
+		<programlisting>
+	[root@localhost ~]# zdb
+datapool:
+    version: 5000
+    name: 'datapool'
+    state: 0
+    txg: 4
+    pool_guid: 8560869201706480032
+    errata: 0
+    hostname: 'localhost.localdomain'
+    vdev_children: 2
+    vdev_tree:
+        type: 'root'
+        id: 0
+        guid: 8560869201706480032
+        create_txg: 4
+        children[0]:
+            type: 'mirror'
+            id: 0
+            guid: 6918291420727026689
+            metaslab_array: 37
+            metaslab_shift: 24
+            ashift: 9
+            asize: 2132279296
+            is_log: 0
+            create_txg: 4
+            children[0]:
+                type: 'disk'
+                id: 0
+                guid: 5135146604379500971
+                path: '/dev/sdb1'
+                whole_disk: 1
+                create_txg: 4
+            children[1]:
+                type: 'disk'
+                id: 1
+                guid: 8252522761405928242
+                path: '/dev/sdc1'
+                whole_disk: 1
+                create_txg: 4
+        children[1]:
+            type: 'mirror'
+            id: 1
+            guid: 4411873599133245467
+            metaslab_array: 34
+            metaslab_shift: 24
+            ashift: 9
+            asize: 2132279296
+            is_log: 0
+            create_txg: 4
+            children[0]:
+                type: 'disk'
+                id: 0
+                guid: 12277352387662817231
+                path: '/dev/sdd1'
+                whole_disk: 1
+                create_txg: 4
+            children[1]:
+                type: 'disk'
+                id: 1
+                guid: 12555207356901799735
+                path: '/dev/sde1'
+                whole_disk: 1
+                create_txg: 4
+    features_for_read:
+        com.delphix:hole_birth
+        com.delphix:embedded_data
+		</programlisting>
+	</para>
+</sect1>
+</chapter>
+<chapter xml:id="reading"><title>Additional sources of ZFS information</title>
+<para>
+	While I tried for this guide to be detailed and informative, it is impossible to explore all the corners of ZFS and storage more so. Situations where you will not find an answer here will happen from time to time and it is a good thing to know where to start looking for answer. You may also wish for more knowledge or feel that I explained things too little. Places to visit are::
+	<itemizedlist>
+		<listitem><para><ulink url="http://open-zfs.org/wiki/Documentation"><citetitle>Open-ZFS Project Documentation</citetitle></ulink> page should probably be the first place to go. It hosts number of links to additional sources of information, as well as many good articles itself</para></listitem>
+		<listitem><para><ulink url="http://zfsonlinux.org/"><citetitle>ZFS On Linux</citetitle></ulink> page. It is the ZFS porting project. It contains links to packages, distribution repositories, distribution documentations and a FAQ, as well as issue tracker</para></listitem>
+		<listitem><para><ulink url="http://www.solarisinternals.com/wiki/index.php/ZFS_Evil_Tuning_Guide"><citetitle>ZFS Evil Tuning Guide</citetitle></ulink>. Title says it all. Tuning advice, some evil. Not all will be applicable to Linux, but still contains knowledge that may prove useful</para></listitem>
+		<listitem><para><ulink url="http://completelyfake.eu/illumos/docs/zfsadmin/">ZFS Administrator Guide</ulink> - THE guide to using ZFS </para></listitem>
+		<listitem><para><ulink url="http://completelyfake.eu/"><citetitle>Completely Fake</citetitle></ulink>. My web page, where I write about things that make me tick. I am sure to write about ZFS now and then</para></listitem>
+	</itemizedlist>
+</para>
+	<para>
+		Apart from above, more or less static sources of information, you should visit irc #zfsonlinux channel on <ulink url="http://freenode.net">FreeNode IRC Servers</ulink> and <ulink url="http://zfsonlinux.org/lists.html">ZFS on Linux Mailing Lists</ulink>.
+	</para>
+</chapter>
+
+<index />
+</book>

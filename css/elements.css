@@ -1,0 +1,162 @@
+body {
+    padding: 2em;
+    margin: 0;
+    background-color: white;
+    font-size: 75.01%; /* 12px [1] */
+    line-height: 1.5em; /* 18px [2] */
+    color: black;
+    font-family: "Arial", sans-serif;
+}
+
+h1, h2, h3 {
+    margin-bottom: 0.5em;
+}
+h1+p, h2+p, h3+p, h4+p, h5+p {
+    margin-top: 0;
+}
+h1 {
+    color: #538211;
+}
+h2 {
+	font-size: 200%;
+	color: #538211;
+	line-height: 1em;
+}
+h3 {
+    font-size: 150%;
+}
+h4 {
+    font-size: 125%;
+}
+h5, h6 {
+    font-size: 1em;
+    margin-bottom: 0.2em;
+    margin-top: 0.2em;
+}
+
+address {}
+
+
+em {}
+strong {}
+dfn {
+	font-style: normal;
+}
+abbr[title], acronym[title], dfn[title] {
+	cursor: help;
+}
+programlisting {
+    color: black;
+    font-family: "Lucida Console", monospace;
+    font-size: 100%;
+}
+pre {
+    background-color: #efefef;
+    border: 1px solid #ccc;
+    font-size: 100.01%;
+    padding: 0.5em;
+    overflow: hidden;
+}
+samp {}
+kbd {}
+var {}
+cite {}
+abbr {}
+acronym {}
+blockquote {}
+q {}
+sub {}
+sup {}
+p {}
+ins {}
+del {}
+
+
+ul, ol {
+    margin-left: 0;
+    padding-left: 1.5em;
+}
+li {
+    margin: 0;
+    padding: 0;
+}
+dl {}
+dt {}
+dd {}
+
+
+table {
+    border-collapse: collapse;
+    empty-cells: show;
+    margin: 1em 0 1em 0;
+}
+
+caption {
+    text-align: left;
+    font-weight: bold;
+}
+
+thead {}
+tfoot {}
+tbody {}
+colgroup {}
+col {}
+th, td {
+    padding: 0.3em 0.8em;
+    border: 1px solid #999;
+    vertical-align: top;
+}
+
+
+a:link {}
+a:visited {}
+a:link:hover {} /* [4] */
+a:visited:hover {}
+a:active {}
+a:focus {}
+a:focus:hover {}
+
+a img {
+    border-style: none;
+}
+
+
+
+img {}
+object {}
+applet {}
+
+
+tt { font-family: Courier, monospace; }
+i {}
+b {}
+big {}
+small {}
+
+hr {}
+
+
+iframe {}
+
+
+form {}
+input {
+    font-size: 0.95em;
+}
+textarea {
+    font-size: 1.1em;
+    overflow: auto;
+}
+
+select,
+optgroup,
+option {
+    font-size: 1em;
+}
+
+button {}
+button:focus {}
+select:focus {}
+label {}
+fieldset {}
+legend {}
