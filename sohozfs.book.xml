@@ -71,10 +71,16 @@
 	</sect1>
 	<sect1 xml:id="preface-4"><title>Acknowledgments</title>
 	<para>
+		Obviously, greatest thanks go to my Wife, Ada, and kids: Iga and Mikolaj, for understanding and support.
+	</para>
+	<para>
 		There are numerous people that had direct or indirect influence on this guide. OpenSolaris and later illumos and OpenZFS community members, without whom I'd never have a privilege to work with fantastic technology. Polish OpenSolaris User Group, which I have led for few years, undertook great effort of translating original ZFS Administration Guide, in which I took part. Nexenta Systems, Inc., where I have finally installed and serviced many ZFS storage arrays.
 	</para>
 	<para>
-		The people that I would like to thanks personally are (in no specific order): Dariusz Ankowski, Pete Turner, Matt Green, Andy Bennett, Daniel Borek, Jason Banham, Tim Foster, Darryl Clark, Maciej Jan Broniarz, Claudia Hildebrandt, Ryuji Masuda, Robert Mustacchi, Matt Ahrens, Michał Nowak. They may even not know it, but almost all my ZFS-foo I've learnt from them.
+		The people that I would like to thanks personally are (in no specific order): Dariusz Ankowski, Pete Turner, Matt Green, Andy Bennett, Daniel Borek, Jason Banham, Tim Foster, Darryl Clark, Maciej Jan Broniarz, Claudia Hildebrandt, Ryuji Masuda, Robert Mustacchi, Matt Ahrens, Michal Nowak. They may even not know it, but almost all my ZFS-foo I've learnt from them.
+	</para>
+	<para>
+		People not directly involved with ZFS, but very helpful, helping me learn Linux better or simply telling me, that I can do this: Marcin Juszkiewicz, Grzegorz Adamowicz, Leszek Krupinski.
 	</para>
 	</sect1>
 	<sect1 xml:id="preface-6"><title>Typographic conventions</title>
