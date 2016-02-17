@@ -1697,6 +1697,9 @@ errors: No known data errors
 	This may come as a surprise, but the list about is not complete. This is because list by default omits snapshots. Remember, snapshots consume space increasingly with time, as data change on the snapshotted system. One of very often issues raised by new ZFS storage operators was that they were unable to delete data due to lack of space. They were baffled by both the fact, that deleting data wouldn't increase the available space and that consumed space in ZFS list wouldn't add up to total space available int the pool.
 </para>
 <para>
+	It is sometimes a bit difficult to understand what consumes your pool space. I will try to explain on examples, but nothing beats experience. Create a pool, fill it with data, run snapshots, delete, create reservations. All the time observe <command>zfs list<option> -t all -o snapshot</option></command> and <command>zfs list <option>-t all</option></command> to better understand the space accounting.
+	</para>
+<para>
 	Lets consider a situation when you have a 3 TB pool.
  	<programlisting>
   	<userinput>
