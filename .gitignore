@@ -1,4 +1,7 @@
-sohozfs/*.html
-sohozfs/*.pdf
-sohozfs/*.fo
+*.html
+*.pdf
+*.fo
 .directory
+Makefile
+custom.xsl
+catalog.xml
