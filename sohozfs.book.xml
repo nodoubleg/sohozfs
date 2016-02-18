@@ -1285,6 +1285,11 @@ errors: No known data errors
 		</programlisting>
 	</sect2>
 </sect1>
+<sect1 xml:id="installation-9"><title>zfs-auto-snapshot</title>
+	<para>
+		One cool tool to install is ZFS Auto Snapshot: <xref linkend="https://github.com/zfsonlinux/zfs-auto-snapshot" />. I believe you should be able to follow the installation instructions from repository page. Configuration is pretty simple and consists of cron configuration files being added to your cron system service.
+	</para>
+</sect1>
 <sect1 xml:id="installation-10"><title>arcstat.pl</title>
 	<para>
 		While it seems not to be a part of ZFS on Linux distribution after I installed packages, arcstat.pl will tell you important things, that will be covered later, in chapter <xref linkend="monitoring" />. Still, I consider this to be as important as other ZFS commands.
