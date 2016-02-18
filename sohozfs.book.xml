@@ -47,6 +47,9 @@
 
 <preface xml:id="preface">
 	<title>Preface</title>
+	<note>
+		This is a Work In Progress version. Quite likely to host misspelled words and weird phrasing. I am working on smoothing those out, as I go, honest.
+	</note>
 	<para>The <citetitle>Building SoHo storage with ZFS on Linux"</citetitle> is an on hands guide to planning, deploying and maintaining Small Office Home Office storage system using ZFS. While ZFS was first release for Sun Solaris (and now Oracle Solaris) operating systems, open source fork has been created. All open source ZFS implementations, that means <ulink url="https://www.illumos.org/">illumos</ulink>, <ulink url="http://www.freebsd.org">FreeBSD</ulink> and <ulink url="http://www.kernel.org">Linux</ulink>, are cooperating under umbrella of <ulink url="http://www.open-zfs.org">OpenZFS project</ulink>. </para>
 	<note>
 		<para>While my main experience covers large enterprise ZFS storage arrays working under illumos control, FreeBSD and Linux have better hardware drivers support for commodity hardware. I will thus mostly cover the two. For Linux CentOS Linux and Ubuntu Server are covered. As a side note: Any step done on CentOS should be applicable straight to RedHat Enterprise Linux. If you wish to have a Linux distribution with paid Support, use Red Hat or Ubuntu.</para>
