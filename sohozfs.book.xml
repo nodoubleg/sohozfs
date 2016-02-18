@@ -120,6 +120,13 @@
 	<para>
 		Long time illumos and ZFS enthusiast, I've worked with ZFS storage from few hundred gigabytes up to hundreds of terabytes capacity. For several years a Field Engineer at Nexenta Systems, Inc., a Software Defined Storage company, installed and supported large number of company's customers. I have been an active member of OpenSolaris and later on illumos communities, with special interest in ZFS, and later OpenZFS. I started working professionally with Linuxes in 1999 and since then used Linuxes and Unices exclusively on my servers and desktops.
 	</para>
+	<para>
+		My professional Curriculum Vitae is hosted at <link href="https://pl.linkedin.com/in/damian-wojsław-559722a0">LinkedIn Profile</link>.<br>
+		I also have a <link href="http://twitter.com/damian_wojslaw">Twitter account</link> that may be of some interest.
+	</para>
+	<para>
+		Currently I'm trying to revive <link href="https://github.com/rmustacc/illumos-docbooks">illumos Documentations</link>, especially the ZFS Admin Guide.
+	</para>
 	</sect1>
 	<sect1 xml:id="preface-8">
 		<title>How this book is organized?</title>
