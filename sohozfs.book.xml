@@ -61,7 +61,7 @@
 	</sect1>
 	<sect1 xml:id="preface-3"><title>How to use this book?</title>
 	<para>
-		While this guide is trying to progress naturally from theory and basics through more technical and real life knowledge to full hands on experience, best way to use it depends on yourself. I would recommend reding it at least twice before you go and buy hardware or refit existing hardware that you already own. Later on, you may wish to go through whole book again, as you progress towards storage deployment, or skip to chapters of interest. Remember though, successful ZFS administration relies on understanding its principles, so looking back at ZFS Overview is recommended any time you fell you may have missed something.
+		While this guide is trying to progress naturally from theory and basics through more technical and real life knowledge to full hands on experience, best way to use it depends on yourself. I would recommend reading it at least twice before you go and buy hardware or refit existing hardware that you already own. Later on, you may wish to go through whole book again, as you progress towards storage deployment, or skip to chapters of interest. Remember though, successful ZFS administration relies on understanding its principles, so looking back at ZFS Overview is recommended any time you fell you may have missed something.
 	</para>
 	</sect1>
 	<sect1 xml:id="preface-4"><title>Acknowledgments</title>
@@ -245,7 +245,26 @@
 		</itemizedlist>
 	</para>
 	<para>
-		Given four drives: <literal>/dev/sdb</literal>, <literal>/dev/sdc</literal>, <literal>/dev/sdd</literal> and <literal>/dev/sde</literal>, first step is presented below. First recommended command removes partition table from devices:
+		Given four drives: <literal>/dev/sdb</literal>, <literal>/dev/sdc</literal>, <literal>/dev/sdd</literal> and <literal>/dev/sde</literal>, first step is presented below. First recommended command removes partition table from devices. I am not sure it is required step, but I'll follow the documentation. If you don't know what drives are available on your system, use <command>lsblk</command> command. The <option>-S</option> switch makes it print only SCSI devices:
+		<programlisting>
+	trochej@ubuntuzfs:~$ lsblk -S
+	NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
+	sda  2:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sdb  3:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sdc  4:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sdd  5:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sde  6:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sdf  7:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sdg  8:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sdh  9:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
+	sdi  10:0:0:0   disk ATA      VBOX HARDDISK    1.0  sata
+	sdj  11:0:0:0   disk ATA      VBOX HARDDISK    1.0  sata
+	sdk  12:0:0:0   disk ATA      VBOX HARDDISK    1.0  sata
+	sdl  13:0:0:0   disk ATA      VBOX HARDDISK    1.0  sata
+	sdm  14:0:0:0   disk ATA      VBOX HARDDISK    1.0  sata
+	sr0  1:0:0:0    rom  VBOX     CD-ROM           1.0  ata
+		</programlisting>
+		Before running any destructive action, look at outputs from <command>fdisk <option>-l</option></command> and <command>mount</command> commands, to avoid breaking drives already in use by your system.
 	<programlisting>	
 	<computeroutput>
 	[root@localhost ~]#</computeroutput> <userinput>dd if=/dev/zero of=/dev/sdb \
