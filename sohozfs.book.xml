@@ -47,12 +47,12 @@
 
 <preface xml:id="preface">
 	<title>Preface</title>
-	<para>The <citetitle>Building SoHo storage with ZFS on Linux"</citetitle> is an on hands guide to planning, deploying and maintaining Small Office Home Office storage system using ZFS. While ZFS was first release for Sun Solaris (and now Oracle Solaris) operating systems, open source fork has been created. All open source ZFS implementations, that means <link href="https://www.illumos.org/">illumos</link>, <link href="http://www.freebsd.org">FreeBSD</link> and <link href="http://www.kernel.org">Linux</link>, are cooperating under umbrella of <link href="http://www.open-zfs.org">OpenZFS project</link>. </para>
+	<para>The <citetitle>Building SoHo storage with ZFS on Linux"</citetitle> is an on hands guide to planning, deploying and maintaining Small Office Home Office storage system using ZFS. While ZFS was first release for Sun Solaris (and now Oracle Solaris) operating systems, open source fork has been created. All open source ZFS implementations, that means <ulink url="https://www.illumos.org/">illumos</ulink>, <ulink url="http://www.freebsd.org">FreeBSD</ulink> and <ulink url="http://www.kernel.org">Linux</ulink>, are cooperating under umbrella of <ulink url="http://www.open-zfs.org">OpenZFS project</ulink>. </para>
 	<note>
 		<para>While my main experience covers large enterprise ZFS storage arrays working under illumos control, FreeBSD and Linux have better hardware drivers support for commodity hardware. I will thus mostly cover the two. For Linux CentOS Linux and Ubuntu Server are covered. As a side note: Any step done on CentOS should be applicable straight to RedHat Enterprise Linux. If you wish to have a Linux distribution with paid Support, use Red Hat or Ubuntu.</para>
 	</note>
 	<para>
-		It all started as an exercise and as a way to check how much do I really know about ZFS. I wanted to go through a book writing process from a start to an end checking along how much I'd really need to learn to close gaps. Online version of this guide is always available at <link href="http://completelyfake.eu/sohozfs/sohozfs.html">http://completelyfake.eu/sohozfs/sohozfs.html</link>. Sources are available at <link href="https://github.com/madwizard/sohozfs">https://github.com/madwizard/sohozfs</link>. A pdf version for download is available at <link href="http://completelyfake.eu/sohozfs/sohozfs.pdf">http://completelyfake.eu/sohozfs/sohozfs.pdf</link>. You can use and distribute it freely according to Creative Commons Share Alike 3.0 License. 
+		It all started as an exercise and as a way to check how much do I really know about ZFS. I wanted to go through a book writing process from a start to an end checking along how much I'd really need to learn to close gaps. Online version of this guide is always available at <ulink url="http://completelyfake.eu/sohozfs/sohozfs.html">http://completelyfake.eu/sohozfs/sohozfs.html</ulink>. Sources are available at <ulink url="https://github.com/madwizard/sohozfs">https://github.com/madwizard/sohozfs</ulink>. A pdf version for download is available at <ulink url="http://completelyfake.eu/sohozfs/sohozfs.pdf">http://completelyfake.eu/sohozfs/sohozfs.pdf</ulink>. You can use and distribute it freely according to Creative Commons Share Alike 3.0 License. 
 	</para>
 	<sect1>
 	<title xml:id="preface-2">Who Should Use This Book</title>
@@ -121,13 +121,13 @@
 		Long time illumos and ZFS enthusiast, I've worked with ZFS storage from few hundred gigabytes up to hundreds of terabytes capacity. For several years a Field Engineer at Nexenta Systems, Inc., a Software Defined Storage company, installed and supported large number of company's customers. I have been an active member of OpenSolaris and later on illumos communities, with special interest in ZFS, and later OpenZFS. I started working professionally with Linuxes in 1999 and since then used Linuxes and Unices exclusively on my servers and desktops.
 	</para>
 	<para>
-		My professional Curriculum Vitae is hosted at <link href="https://pl.linkedin.com/in/damian-wojsław-559722a0">LinkedIn Profile</link>.
+		My professional Curriculum Vitae is hosted at <ulink url="https://pl.linkedin.com/in/damian-wojsław-559722a0">LinkedIn Profile</ulink>.
 	</para>
 	<para>
-		I also have a <link href="http://twitter.com/damian_wojslaw">Twitter account</link> that may be of some interest.
+		I also have a <ulink url="http://twitter.com/damian_wojslaw">Twitter account</ulink> that may be of some interest.
 	</para>
 	<para>
-		Currently I'm trying to revive <link href="https://github.com/rmustacc/illumos-docbooks">illumos Documentations</link>, especially the ZFS Admin Guide.
+		Currently I'm trying to revive <ulink url="https://github.com/rmustacc/illumos-docbooks">illumos Documentations</ulink>, especially the ZFS Admin Guide.
 	</para>
 	</sect1>
 	<sect1 xml:id="preface-8">
