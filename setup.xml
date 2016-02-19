@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<pchapter xml:id="setup" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+<chapter xml:id="setup" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
 
 <title>Setup</title>
 <sect1 xml:id="setup-1"><title>Creating a mirrored pool</title>
