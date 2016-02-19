@@ -725,6 +725,9 @@ errors: No known data errors
 <sect1 xml:id="zfsover-9"><title>Deduplication</title>
 <para>
 	<indexterm><primary>Deduplication</primary></indexterm>
+	<note>
+		As a rule of thumb: don't dedupe. Just don't. If you really need to watch out for disk space, look at other ways of increasing capacity. Honest.
+	</note>
 	ZFS has an interesting option that spurred quite lot of interest, when first introduced. Turning deduplication on tells ZFS to keep track of data blocks. Whenever data is written to disks, ZFS will compare with blocks already in the filesystem and if finds any block identical, will not write physical data, but add some meta-information and thus save lots and lots of disk space.
 </para>
 <para>
@@ -1296,6 +1299,16 @@ errors: No known data errors
 
 		</programlisting>
 	</sect2>
+</sect1>
+<sect1 xml:id="installation-2"><title>System tools</title>
+	<para>
+		You will need some system tools. Get used to them. 
+		<itemizedlist>
+			<listitem><para>We've already shown you <command>smartctl</command>. Read about this command. Not very critical, it may however provide interesting information on your disks' capabilities or their health.</para></listitem>
+			<listitem><para><command>lsblk</command> will tell you what block devices you have. It will assist you in identifying drives' names you will use while setting u your ZFS pool.</para></listitem>
+			<listitem><para><command>blkid</command> will help you identify drives already used by other filesystems. You may wish to use <command>mount</command> and <command>df</command> for that purpose too.</para></listitem>
+</itemizedlist>
+	</para>
 </sect1>
 <sect1 xml:id="installation-9"><title>zfs-auto-snapshot</title>
 	<para>
