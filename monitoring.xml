@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter xml:id="monitoring" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+	<title>Monitoring</title>
+	<para>
+		Your success in hosting DIY storage will greatly depend on your ability to monitor the storage. You have very rich choice of software, from opensource free like <ulink url="https://www.nagios.org/">Nagios</ulink> or it's fork <ulink url="https://www.icinga.org/">Icinga</ulink>, <ulink url="http://www.zabbix.com/">Zabbix</ulink> to completely commercial, like <ulink url="http://www-03.ibm.com/software/products/en/ibm-workload-automation">IBM Tivoli</ulink> or <ulink url="http://www.accelops.com/">AccelOps</ulink>. A good comparison guide is always available <ulink url="https://en.wikipedia.org/wiki/Comparison_of_network_monitoring_systems">on Wikipedia</ulink>. If you still don't have a monitoring solution, implement it. If your company's infrastructure is still in its infancy, plan for monitoring and implement it as one of first services. This may be cumbersome, but it really pays off later, when the infrastructure matures. The later you start implementing monitoring, the more work you need to put into it.
+	</para>
+	<para>
+		I will show implementing ZFS monitoring using popular monitoring suites:
+		<itemizedlist>
+			<listitem><para><ulink url="https://www.icinga.org/">Icinga</ulink></para></listitem>
+			<listitem><para><ulink url="https://www.zabbix.com/">Zabbix</ulink></para></listitem>
+			<listitem><para><ulink url="http://www.opennms.org/">OpenNMS</ulink></para></listitem>
+		</itemizedlist>
+		Icinga configuration should be applicable to Nagios without any modifications.
+	</para>
+	<sect1 xml:id="monitoring-1"><title>What to monitor?</title>
+	<para>
+		One of things to monitor is state of your Aadaptive Replacement Cache (ARC). It is your read cache for the filesystem. The more it stores in RAM, the lower the miss ratio, the better your performance - you will satisfy more requests from memory, totally omitting the need for touching platters of your disks.
+		<programlisting>
+		<computeroutput>
+	trochej@madchamber:~$</computeroutput> <userinput>sudo arcstat.pl</userinput>
+	<computeroutput>
+    time        read  miss  miss%  dmis  dm%  pmis  pm%  mmis  mm%  arcsz     c  
+	10:21:15     0     0      0     0     0     0    0     0    0    8.5G   8.5G 
+		</computeroutput>
+		</programlisting>
+	</para>
+	</sect1>
+</chapter>
+

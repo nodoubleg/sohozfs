@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter xml:id="advsetup" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+<title>Advanced setup</title>
+<sect1 xml:id="advsetup-1"><title>Hot spares</title>
+<indexterm><primary>ZFS</primary><secondary>hot spare</secondary></indexterm>
+	<para>
+		As mentioned previously, you can assign a hot spare disk to your pool. In case ZFS pool looses a disk, the spare will be automatically attached and <indexterm><primary>resilvering</primary></indexterm> resilvering process will be started.
+	</para>
+	<para>
+		Lets consider a mirrored pool consisting of two vdevs two drives each:
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+		NAME        STATE     READ WRITE CKSUM
+		datapool    ONLINE       0     0     0
+		  mirror-0  ONLINE       0     0     0
+		    sdb     ONLINE       0     0     0
+		    sdc     ONLINE       0     0     0
+		  mirror-1  ONLINE       0     0     0
+		    sdd     ONLINE       0     0     0
+		    sde     ONLINE       0     0     0
+
+	errors: No known data errors
+			</computeroutput>
+		</programlisting>
+		You add a <indexterm><primary>hot spare</primary><secondary>add</secondary></indexterm> hot spare device by running <command>zpool add</command><option>spare</option> command:
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool add datapool -f spare /dev/sdf</userinput>
+		</programlisting>
+		Confirm the disk has been added by querying the pool's status:
+<programlisting>
+	<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status datapool</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+		NAME        STATE     READ WRITE CKSUM
+		datapool    ONLINE       0     0     0
+		  mirror-0  ONLINE       0     0     0
+		    sdb     ONLINE       0     0     0
+		    sdc     ONLINE       0     0     0
+		  mirror-1  ONLINE       0     0     0
+		    sdd     ONLINE       0     0     0
+		    sde     ONLINE       0     0     0
+		spares
+		  sdf       AVAIL   
+
+	errors: No known data errors
+			</computeroutput>
+		</programlisting>
+	</para>
+	<para>
+		<indexterm><primary>hot spare</primary><secondary>remove</secondary></indexterm>
+		In a case you'd wish to remove the spare from the pool, use <command>zpool remove</command> command:
+	<programlisting>
+		<computeroutput>
+			trochej@ubuntuzfs:~$ sudo zpool remove datapool /dev/sdf
+		</computeroutput>
+	</programlisting>
+	As previously, you can use <command>zpool status</command> to confirm the change.
+	</para>
+</sect1>
+<sect1 xml:id="advsetup-2"><title>ZIL device</title>
+</sect1>
+<sect1 xml:id="advsetup-3"><title>L2ARC device (cache)</title>
+</sect1>
+<sect1 xml:id="advsetup-4"><title>Quotas</title>
+</sect1>
+<sect1 xml:id="advsetup-5"><title>Reservations</title>
+</sect1>
+<sect1 xml:id="advsetup-6"><title>Snapshots and clones</title>
+</sect1>
+<sect1 xml:id="advsetup-7"><title>ACL-s</title>
+</sect1>
+<sect1 xml:id="advsetup-8"><title>Pool properties</title>
+</sect1>
+<sect1 xml:id="advsetup-9"><title>ZFS Send and Receive</title>
+</sect1>
+<sect1 xml:id="advsetup-10"><title>Passwordless ZFS commands</title>
+	<para>
+		For both monitoring that will be covered later on and for day to day operations, it is useful to be able to run some commands without typing in your password with every sudo invocation. To that end, I have prepared a sudoers file based on a sudoers file installed by default with ZOL packages on Fedora. 
+	</para>
+	<para>
+		First assumption is, you don't want everyone to run those commands passwordless. Create a special system group to easily add the right to any system operator:
+		<programlisting>
+  		<userinput>
+	sudo groupadd zfsadmin
+ 		</userinput>
+ 		</programlisting>
+ 		Then add a user to this group (my user login is trochej):
+ 		<programlisting>
+  		<userinput>
+	usermod -ag zfsadmin trochej
+ 		</userinput>
+ 		</programlisting>
+ 		Place a file from listing below, or download it from <ulink url="http://completelyfake.eu/zfs-sudoers">my site</ulink> and place in <literal>/etc/sudoers.d/</literal> :
+		<programlisting>
+  		
+	# Allow read-only ZoL commands to be called through sudo
+	# without a password. Remove the first '#' column to enable.
+	#
+	# CAUTION: Any syntax error introduced here will break sudo.
+	#
+	# Cmnd alias specification
+	Cmnd_Alias C_ZFS = \
+	  /sbin/zfs "", /sbin/zfs help *, \
+	  /sbin/zfs get, /sbin/zfs get *, \
+	  /sbin/zfs list, /sbin/zfs list *, \
+	  /sbin/zpool "", /sbin/zpool help *, \
+	  /sbin/zpool iostat, /sbin/zpool iostat *, \
+	  /sbin/zpool list, /sbin/zpool list *, \
+	  /sbin/zpool status, /sbin/zpool status *, \
+	  /sbin/zpool upgrade, /sbin/zpool upgrade -v, \
+	  /sbin/arcstat.pl
+
+	Runas_Alias R_ROOT = root
+
+	# allow users in zfsadmin group to use basic read-only ZFS commands
+	%zfsadmin ALL = (R_ROOT) NOPASSWD: C_ZFS
+ 		
+ 		</programlisting>
+ 		The <literal>arcstat.pl</literal> script was added in previous steps.
+	</para>
+	<para>
+		After placing it in <literal>/etc/sudoers.d/</literal> run visudo command and make sure the last line is:
+ 		<programlisting>
+
+	#includedir /etc/sudoers.d
+
+ 		</programlisting>
+ 		Last thing to do, is setting up proper file attributes:
+ 		<programlisting>
+		<userinput>
+	chmod 0440 /etc/sudoers.d/zfs-sudoers
+ 		</userinput>
+ 		</programlisting>
+	</para>
+	<para>
+		 Next time user trochej logs in, they will be able to run informational zfs and zpool subcommands without need to type in their password. Other commands, that change filesystem and pool state, still need confirmation by typing in their password.
+	</para>
+</sect1>
+</chapter>

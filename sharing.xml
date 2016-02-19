@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter xml:id="sharing" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+<title>Sharing</title>
+<sect1 xml:id="sharing-1"><title>NFS - builtin</title>
+</sect1>
+<sect1 xml:id="sharing-2"><title>NFS - Linux server</title>
+</sect1>
+<sect1 xml:id="sharing-3"><title>CIFS - builtin</title>
+</sect1>
+<sect1 xml:id="sharing-4"><title>CIFS - the SAMBA server</title>
+</sect1>
+<sect1 xml:id="sharing-5"><title>Other sharing protocols</title>
+	<para>
+		FC, FCoE, iSCSI.
+	</para>
+</sect1>
+</chapter>

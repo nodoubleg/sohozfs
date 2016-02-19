@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter xml:id="reading" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+	<title>Additional sources of ZFS information</title>
+<para>
+	While I tried for this guide to be detailed and informative, it is impossible to explore all the corners of ZFS and storage more so. Situations where you will not find an answer here will happen from time to time and it is a good thing to know where to start looking for answer. You may also wish for more knowledge or feel that I explained things too little. Places to visit are::
+	<itemizedlist>
+		<listitem><para><ulink url="http://open-zfs.org/wiki/Documentation"><citetitle>Open-ZFS Project Documentation</citetitle></ulink> page should probably be the first place to go. It hosts number of links to additional sources of information, as well as many good articles itself</para></listitem>
+		<listitem><para><ulink url="http://zfsonlinux.org/"><citetitle>ZFS On Linux</citetitle></ulink> page. It is the ZFS porting project. It contains links to packages, distribution repositories, distribution documentations and a FAQ, as well as issue tracker</para></listitem>
+		<listitem><para><ulink url="http://www.solarisinternals.com/wiki/index.php/ZFS_Evil_Tuning_Guide"><citetitle>ZFS Evil Tuning Guide</citetitle></ulink>. Title says it all. Tuning advice, some evil. Not all will be applicable to Linux, but still contains knowledge that may prove useful</para></listitem>
+		<listitem><para><ulink url="http://completelyfake.eu/illumos/docs/zfsadmin/">ZFS Administrator Guide</ulink> - THE guide to using ZFS </para></listitem>
+		<listitem><para><ulink url="http://completelyfake.eu/"><citetitle>Completely Fake</citetitle></ulink>. My web page, where I write about things that make me tick. I am sure to write about ZFS now and then</para></listitem>
+	</itemizedlist>
+</para>
+	<para>
+		Apart from above, more or less static sources of information, you should visit irc #zfsonlinux channel on <ulink url="http://freenode.net">FreeNode IRC Servers</ulink> and <ulink url="http://zfsonlinux.org/lists.html">ZFS on Linux Mailing Lists</ulink>.
+	</para>
+</chapter>

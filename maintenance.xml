@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter xml:id="maintenance" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+<title>Storage maintenance</title>
+<sect1 xml:id="maintenance-1"><title>Aspects of maintenance</title>
+<para>
+	Storage maintenance, especially DIY one, is a very wide subject. It is both technical and non-technical. In this chapter I will try to cover as much technical side as possible and as much non-technical as is sane. Surely, real non-technical side warrants a separate book on its own.
+</para>
+<para>
+	Typical maintenance tasks start with monitoring the storage. You need to cover hardware health, software updates for your distribution, security issues, atypical access logs (intrusion detection? access privileges breach?). Many of those are outside the scope of the book.
+</para>
+<para>
+	Monitoring is already covered in the chapter <xref linkend="monitoring" />. 
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-2"><title>Working with hot spares</title>
+<indexterm><primary>hot spare</primary><secondary>working with</secondary></indexterm>
+<para>
+	You've seen how to add a hot spare to the pool in <xref linkend="advsetup" /> chapter. But there is a bit more to them than that. 
+</para>
+</sect1>
+<sect1 xml:id="maintenance-3"><title>Replacing bad drive</title>
+	<para>
+		Replacing a drive.
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-4"><title>Recovering destroyed pool</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-5"><title>Expanding pool</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-6"><title>Increasing capacity by disks replacement</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-7"><title>Turning single disk pool into mirrored</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-8"><title>Turning two-way mirror into three-way mirror</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-9"><title>Turning devices online and taking them offline</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-10"><title>Exporting and importing pools</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-11"><title>Manual scrub</title>
+	<para>
+	</para>
+</sect1>
+<sect1 xml:id="maintenance-12"><title>Ditto blocks</title>
+	<para>
+	</para>
+</sect1>
+</chapter>

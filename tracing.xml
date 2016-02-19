@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<chapter xml:id="tracing" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+    <title>Troubleshooting</title>
+<sect1 xml:id="tracing-1"><title>I got performance issues. Where to start?</title>
+	<para>
+		Tracing performance issues may prove tricky. There are many items that need to be taken into account while discussing performance and not many of them are easy to capture and quantify. From users' experience and perception of what's low and fast, to the various elements between storage disks and pool space consumers, there is whole land of questions that need to be asked and many of them don't have an easy answer. Fortunately for you, your setup is small and the amount of things to check limited.
+	</para>
+	<para>
+	For an rough overview of I/O on your pool, run <command>zpool iostat</command>:
+	<programlisting>
+[root@localhost ~]# zpool iostat
+               capacity     operations    bandwidth
+pool        alloc   free   read  write   read  write
+----------  -----  -----  -----  -----  -----  -----
+datapool    68.5K  3.97G      0      0      0     12
+
+		</programlisting>
+
+	For more detailed breakthrough call <command>zpool iostat</command> <option>-v</option>:
+		<programlisting>
+[root@localhost ~]# zpool iostat -v
+capacity     operations    bandwidth
+pool        alloc   free   read  write   read  write
+----------  -----  -----  -----  -----  -----  -----
+datapool    68.5K  3.97G      0      0      0     12
+  mirror      26K  1.98G      0      0      0      4
+    sdb         -      -      0      0     62    198
+    sdc         -      -      0      0     62    198
+  mirror    42.5K  1.98G      0      0      0      8
+    sdd         -      -      0      0     62    202
+    sde         -      -      0      0     62    202
+----------  -----  -----  -----  -----  -----  -----
+	</programlisting>
+<programlisting>
+	[root@localhost ~]# vmstat
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+ 2  0      0 3018652   1832 711616    0    0    60    27   21   72  0  0 99  0  0
+[root@localhost ~]# iostat
+Linux 3.10.0-327.4.5.el7.x86_64 (localhost.localdomain) 	02/12/2016 	_x86_64_	(1 CPU)
+
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0.21    0.00    0.18    0.15    0.00   99.46
+
+Device:            tps    kB_read/s    kB_wrtn/s    kB_read    kB_wrtn
+sda               2.83        58.99        26.55     549131     247144
+sdb               0.05         0.32         0.17       2984       1545
+sdc               0.04         0.27         0.17       2516       1545
+sdd               0.04         0.27         0.17       2520       1571
+sde               0.04         0.27         0.17       2508       1571
+dm-0              0.02         0.17         0.00       1544          0
+dm-1              2.64        52.92        19.94     492670     185663
+</programlisting>
+
+	</para>
+</sect1>
+<sect1 xml:id="tracing-10"><title>zdb</title>
+	<para>
+		ZFS comes with a nice command that is largely undocumented. You wouldn't use it very often, but in some rare occasions it proved quite useful in the field and may gain you additional insight into inner workings of your pool: <indexterm><primary><command>zdb</command></primary></indexterm>. The output of the command looks similar to:
+		<programlisting>
+	[root@localhost ~]# zdb
+datapool:
+    version: 5000
+    name: 'datapool'
+    state: 0
+    txg: 4
+    pool_guid: 8560869201706480032
+    errata: 0
+    hostname: 'localhost.localdomain'
+    vdev_children: 2
+    vdev_tree:
+        type: 'root'
+        id: 0
+        guid: 8560869201706480032
+        create_txg: 4
+        children[0]:
+            type: 'mirror'
+            id: 0
+            guid: 6918291420727026689
+            metaslab_array: 37
+            metaslab_shift: 24
+            ashift: 9
+            asize: 2132279296
+            is_log: 0
+            create_txg: 4
+            children[0]:
+                type: 'disk'
+                id: 0
+                guid: 5135146604379500971
+                path: '/dev/sdb1'
+                whole_disk: 1
+                create_txg: 4
+            children[1]:
+                type: 'disk'
+                id: 1
+                guid: 8252522761405928242
+                path: '/dev/sdc1'
+                whole_disk: 1
+                create_txg: 4
+        children[1]:
+            type: 'mirror'
+            id: 1
+            guid: 4411873599133245467
+            metaslab_array: 34
+            metaslab_shift: 24
+            ashift: 9
+            asize: 2132279296
+            is_log: 0
+            create_txg: 4
+            children[0]:
+                type: 'disk'
+                id: 0
+                guid: 12277352387662817231
+                path: '/dev/sdd1'
+                whole_disk: 1
+                create_txg: 4
+            children[1]:
+                type: 'disk'
+                id: 1
+                guid: 12555207356901799735
+                path: '/dev/sde1'
+                whole_disk: 1
+                create_txg: 4
+    features_for_read:
+        com.delphix:hole_birth
+        com.delphix:embedded_data
+		</programlisting>
+	</para>
+</sect1>
+</chapter>

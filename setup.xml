@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<pchapter xml:id="setup" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+
+<title>Setup</title>
+<sect1 xml:id="setup-1"><title>Creating a mirrored pool</title>
+	<para>
+		Going through this chapter should be best done at least twice. First, before you buy the hardware and secondly, when you bought it and put together, so it is ready for pool creation.
+	</para>
+	<para>
+		Since I have shown you how to create simple pools in previous chapters, there is no need to demonstrate it now. I am therefore going to jump straight to a bit more involved configurations. Bear in mind however that with single node setup options are limited. 
+	</para>
+	<para>
+		As a reminder, we are not going to cover striped pools at all. Your pool will have absolutely no resiliency in such a setup and you should never consider hosting data you care for on such configuration.
+	</para>
+	<para>
+		Before running any command that may endanger your data, especially in production, ie. <command>zpool create</command> or <command>zpool destroy</command>, confirm that disks you want to use are those that you intended to be used by ZFS.
+	</para>
+	<para>
+		<indexterm><primary>zpool</primary><secondary>create</secondary></indexterm>We have already covered a simple mirrored pool, lets create bigger one, consisting of 10 disks. I am going to follow with <command>zpool status</command> to print resulting pool configuration:
+		<programlisting>
+			<computeroutput>
+  	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool create -f datapool mirror /dev/sdb /dev/sdc \
+  	mirror /dev/sdd /dev/sde \
+  	mirror /dev/sdf /dev/sdg \
+  	mirror /dev/sdh /dev/sdi \
+  	mirror /dev/sdj /dev/sdk
+  </userinput>
+  <computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+	        NAME        STATE     READ WRITE CKSUM
+	        datapool    ONLINE       0     0     0
+	          mirror-0  ONLINE       0     0     0
+	            sdb     ONLINE       0     0     0
+	            sdc     ONLINE       0     0     0
+	          mirror-1  ONLINE       0     0     0
+	            sdd     ONLINE       0     0     0
+	            sde     ONLINE       0     0     0
+	          mirror-2  ONLINE       0     0     0
+	            sdf     ONLINE       0     0     0
+	            sdg     ONLINE       0     0     0
+	          mirror-3  ONLINE       0     0     0
+	            sdh     ONLINE       0     0     0
+	            sdi     ONLINE       0     0     0
+	          mirror-4  ONLINE       0     0     0
+	            sdj     ONLINE       0     0     0
+	            sdk     ONLINE       0     0     0
+
+	errors: No known data errors
+
+ 			</computeroutput>
+ 		</programlisting>
+	</para>
+ 	<para>
+ 		Resulting pool total capacity equals to half the capacity of all disks in the pool:
+ 	<programlisting>
+ 		<computeroutput>
+ 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool list</userinput>
+ 	<computeroutput>
+	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	datapool  9.92G    64K  9.92G         -     0%     0%  1.00x  ONLINE  -
+	</computeroutput>
+ 	</programlisting>
+ 		The pool already is mounted at /datapool and contains a filesystem called datapool, as you can see in the following output:
+
+ 		<programlisting>
+ 			<computeroutput>
+ 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zfs list</userinput>
+ 	<computeroutput>
+	NAME       USED  AVAIL  REFER  MOUNTPOINT
+	datapool    58K  9.77G    19K  /datapool
+	</computeroutput>
+ 		</programlisting>
+ 	</para>
+</sect1>
+<sect1 xml:id="setup-2"><title>Creating RAID-Z pool</title>
+<para>
+	<note><indexterm><primary>zpool</primary><secondary>destroy</secondary></indexterm>
+		I am reusing the same disks in all examples. Before creating a new pool on them, I am going to run <command>zpool destroy</command> on the pool. It does exactly that: marks pool as destroyed and disks as free to be used by other ZFS setups. When ZFS adds a disk to the pool, it labels it with its own GUID and some information that allow ZFS to be self contained. You may move the pool around, export it from current server, reinstall the server to FreeBSD and import the same pool without a problem. Thus, if you decide you no longer need the pool and try to reuse disks for other configuration, <command>zpool</command> will refuse to add it to a new one without using <option>-f</option> switch. 
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool destroy datapool</userinput>
+	<computeroutput>[sudo] password for trochej:</computeroutput>
+		</programlisting>
+	</note>
+	The virtual machine I am working with has 12 disks for use as a storage:
+	<programlisting>
+		<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>ls -ahl /dev/sd[a-z]</userinput>
+	<computeroutput>
+	brw-rw---- 1 root disk 8,   0 Feb 12 21:59 /dev/sda
+	brw-rw---- 1 root disk 8,  16 Feb 15 17:43 /dev/sdb
+	brw-rw---- 1 root disk 8,  32 Feb 15 17:43 /dev/sdc
+	brw-rw---- 1 root disk 8,  48 Feb 15 17:43 /dev/sdd
+	brw-rw---- 1 root disk 8,  64 Feb 15 17:43 /dev/sde
+	brw-rw---- 1 root disk 8,  80 Feb 15 17:43 /dev/sdf
+	brw-rw---- 1 root disk 8,  96 Feb 15 17:43 /dev/sdg
+	brw-rw---- 1 root disk 8, 112 Feb 15 17:43 /dev/sdh
+	brw-rw---- 1 root disk 8, 128 Feb 15 17:43 /dev/sdi
+	brw-rw---- 1 root disk 8, 144 Feb 15 17:43 /dev/sdj
+	brw-rw---- 1 root disk 8, 160 Feb 15 17:43 /dev/sdk
+	brw-rw---- 1 root disk 8, 176 Feb 12 21:59 /dev/sdl
+	brw-rw---- 1 root disk 8, 192 Feb 12 21:59 /dev/sdm
+		</computeroutput>
+	</programlisting>
+	<literal>/dev/sda</literal> is a system disk, that leaves me with disks from <literal>/dev/sdb</literal> to <literal>/dev/sdm</literal>. It means twelve disk for use as a storage. Lets create a RAID-Z pool following previously noted best practice of 5 disk per vdev:
+	<programlisting>
+		<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool create datapool \
+		raidz /dev/sdb /dev/sdc \
+		/dev/sdd /dev/sde /dev/sdf \
+		raidz /dev/sdg /dev/sdh \
+		/dev/sdi /dev/sdj /dev/sdk</userinput>
+	<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+	        NAME        STATE     READ WRITE CKSUM
+	        datapool    ONLINE       0     0     0
+	          raidz1-0  ONLINE       0     0     0
+	            sdb     ONLINE       0     0     0
+	            sdc     ONLINE       0     0     0
+	            sdd     ONLINE       0     0     0
+	            sde     ONLINE       0     0     0
+	            sdf     ONLINE       0     0     0
+	          raidz1-1  ONLINE       0     0     0
+	            sdg     ONLINE       0     0     0
+	            sdh     ONLINE       0     0     0
+	            sdi     ONLINE       0     0     0
+	            sdj     ONLINE       0     0     0
+	            sdk     ONLINE       0     0     0
+
+	errors: No known data errors
+
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool list</userinput>
+	<computeroutput>
+	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	datapool  19.8G   106K  19.7G         -     0%     0%  1.00x  ONLINE  -
+	</computeroutput>
+	</programlisting>
+</para>
+<para>
+	Setup above can withstand loosing a single disk per each vdev at once. With two disks unused, you can add so called <indexterm><primary>ZFS</primary><secondary>hot spare</secondary></indexterm> <literal>hot-spares</literal>. Hot spares are idle disks added to a pool for replacement in case any active disk in a pool fails. The replacement is done automatically by ZFS. The hot spare mechanism isn't intelligent, so it can cause resiliency issues if you care for physical layout of your pool - spreading you pool's disks in different jbods, so that you can loose whole chassis and still retain pool and data.
+	</para>
+	<para>
+		In a simple single server setup the problem above isn't of that significance. You should be totally safe adding the spare disk to a pool. I'll demonstrate it in <xref linkend="advsetup" /> chapter.
+	</para>
+</sect1>
+<sect1 xml:id="setup-3"><title>Creating RAID-Z2 pool</title>
+	<para>Lets now walk through creating a RAID-Z2 pool, which will consist of 12 disks spread evenly between two vdevs:
+		<programlisting>
+			<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool create -f datapool \
+		raidz2 /dev/sdb /dev/sdc /dev/sdd \
+		/dev/sde /dev/sdf /dev/sdg \
+		raidz2 /dev/sdh /dev/sdi /dev/sdj \
+		/dev/sdk /dev/sdl /dev/sdm</userinput>
+		<computeroutput>
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
+	<computeroutput>
+	  pool: datapool
+	 state: ONLINE
+	  scan: none requested
+	config:
+
+	        NAME        STATE     READ WRITE CKSUM
+	        datapool    ONLINE       0     0     0
+	          raidz2-0  ONLINE       0     0     0
+	            sdb     ONLINE       0     0     0
+	            sdc     ONLINE       0     0     0
+	            sdd     ONLINE       0     0     0
+	            sde     ONLINE       0     0     0
+	            sdf     ONLINE       0     0     0
+	            sdg     ONLINE       0     0     0
+	          raidz2-1  ONLINE       0     0     0
+	            sdh     ONLINE       0     0     0
+	            sdi     ONLINE       0     0     0
+	            sdj     ONLINE       0     0     0
+	            sdk     ONLINE       0     0     0
+	            sdl     ONLINE       0     0     0
+	            sdm     ONLINE       0     0     0
+
+	errors: No known data errors
+
+	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool list</userinput>
+	<computeroutput>
+	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+	datapool  23.8G   152K  23.7G         -     0%     0%  1.00x  ONLINE  -
+	</computeroutput>
+		</programlisting>
+	</para>
+</sect1>
+<sect1 xml:id="setup-10"><title>Forcing operations</title>
+<para>
+	There are situations where you will want to conduct two operations with very final consequences: destroying a pool or forcing an operation on a pool, ie. create. You may see lots of it especially  in first stages, when you will be learning the ZFS administration..
+</para>
+<para>
+	Best practice is to destroy a pool before reusing its components, but there are situations when you may end up with a bunch of healthy disks disposed of by someone else. They may contain disks previously in a ZFS pool, but not enough of them to import it and destroy properly. 
+	</para>
+	<para>
+		For such occasions there is the <option>-f</option> switch, meaning <emphasis>force</emphasis>.
+	</para>
+</sect1>
+</chapter>
