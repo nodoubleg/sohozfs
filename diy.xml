@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+	<chapter xml:id="diy"  xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0"><title>Why Do It Yourself?</title>
+	<para>
+		The great question you may be asking yourself is, what is <indexterm><primary>DIY</primary></indexterm> and why should you do it? DIY is an abbreviation of <indexterm><primary>DIY</primary><secondary>Do It Yourself</secondary></indexterm> Do It Yourself. It is probably one of the longest living games of humankind - creating something by your own. While it's not exactly everybody's the way to about everything, there's a certain pride in having done certain activities all by yourself and that might be your first incentive.
+	</para>
+	<para>
+		Secondly, if you are a person that likes to tinker with things and IT is of special interest to you, storage world is a very interesting are to know. And while big storage arrays may be a too big burden, a small, single server storage system is exactly the thing that you can learn exciting side of data serving. If you, like me, feel exited about running Linux from Scratch as your workstation system, if you, like me, like to compile your Linux kernel or update and rebuild your FreeBSD system quite often, you may then find putting together your SoHo storage array a great experience.
+	</para>
+	<para>
+		Thirdly, even though there are great free solutions out there that you may use, they will not teach you all the possibilities and intricacies of using ZFS system. Actually, single node SoHo storage is <emphasis>the system</emphasis> to learn all that there is and have everything tailored exactly to your needs and expectations. With larger scale, with third party products, you will need to compromise with someone else's vision of how storage should be done.
+	</para>
+</chapter>

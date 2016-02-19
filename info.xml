@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<info xml:id="bookinfo" xmlns="http://docbook.org/ns/docbook"
+        xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+	<title>Building SoHo storage with ZFS on Linux</title>
+	<authorgroup>
+		<author>
+			<personname>
+				<firstname>Damian</firstname>
+				<surname>Wojslaw</surname>
+			</personname>
+		</author>
+		<editor>
+			<personname>
+				<firstname>Peter</firstname>
+				<surname>Turner</surname>
+			</personname>
+		</editor>
+	</authorgroup>
+
+<bibliorelation type="isversionof" class="uri">https://completelyfake.eu/sohozfs</bibliorelation>
+
+<releaseinfo>CC BY-SA 3.0
+</releaseinfo>
+
+<pubdate>February 2016</pubdate>
+
+<publisher>
+	<publishername>Damian Wojsław</publishername>
+</publisher>
+
+<abstract>
+	<para>
+      This is guide intended for everyone setting up their home and small office (SoHo) storage and would want to use ZFS on Linux for that purpose.
+    </para>
+</abstract>
+<cover>
+	<para role="tagline">The guide to your SoHo ZFS on Linux storage</para>
+	<mediaobject>
+		<imageobject>
+			<imagedata fileref="gfx/IMAG0317.jpg">
+			</imagedata>
+		</imageobject>
+	</mediaobject>
+</cover>
+</info>

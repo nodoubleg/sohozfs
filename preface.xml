@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<preface xml:id="preface" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
+	<title>Preface</title>
+	<note>
+		This is a Work In Progress version. Quite likely to host misspelled words and weird phrasing. I am working on smoothing those out, as I go, honest.
+	</note>
+	<para>The <citetitle>Building SoHo storage with ZFS on Linux"</citetitle> is an on hands guide to planning, deploying and maintaining Small Office Home Office storage system using ZFS. While ZFS was first release for Sun Solaris (and now Oracle Solaris) operating systems, open source fork has been created. All open source ZFS implementations, that means <ulink url="https://www.illumos.org/">illumos</ulink>, <ulink url="http://www.freebsd.org">FreeBSD</ulink> and <ulink url="http://www.kernel.org">Linux</ulink>, are cooperating under umbrella of <ulink url="http://www.open-zfs.org">OpenZFS project</ulink>. </para>
+	<note>
+		<para>While my main experience covers large enterprise ZFS storage arrays working under illumos control, FreeBSD and Linux have better hardware drivers support for commodity hardware. I will thus mostly cover the two. For Linux CentOS Linux and Ubuntu Server are covered. As a side note: Any step done on CentOS should be applicable straight to RedHat Enterprise Linux. If you wish to have a Linux distribution with paid Support, use Red Hat or Ubuntu.</para>
+	</note>
+	<para>
+		It all started as an exercise and as a way to check how much do I really know about ZFS. I wanted to go through a book writing process from a start to an end checking along how much I'd really need to learn to close gaps. Online version of this guide is always available at <ulink url="http://completelyfake.eu/sohozfs/sohozfs.html">http://completelyfake.eu/sohozfs/sohozfs.html</ulink>. Sources are available at <ulink url="https://github.com/madwizard/sohozfs">https://github.com/madwizard/sohozfs</ulink>. A pdf version for download is available at <ulink url="http://completelyfake.eu/sohozfs/sohozfs.pdf">http://completelyfake.eu/sohozfs/sohozfs.pdf</ulink>. You can use and distribute it freely according to Creative Commons Share Alike 3.0 License. 
+	</para>
+	<sect1>
+	<title xml:id="preface-2">Who Should Use This Book</title>
+	<para>
+		This guide is intended for everyone who would like to work on setting up their SoHo NAS and consider or are committed to ZFS as their choice. Prior operating system administration experience is expected. Relative ease of use of command line (bash, ssh etc), installing packages for given operating system and basic troubleshooting are needed and will not be covered in this guide. A DIY mindset is expected from the reader, as lots of things will need manual labor: from system and packages installation, to monitoring set up.</para>
+	</sect1>
+	<sect1 xml:id="preface-3"><title>How to use this book?</title>
+	<para>
+		While this guide is trying to progress naturally from theory and basics through more technical and real life knowledge to full hands on experience, best way to use it depends on yourself. I would recommend reading it at least twice before you go and buy hardware or refit existing hardware that you already own. Later on, you may wish to go through whole book again, as you progress towards storage deployment, or skip to chapters of interest. Remember though, successful ZFS administration relies on understanding its principles, so looking back at ZFS Overview is recommended any time you fell you may have missed something.
+	</para>
+	</sect1>
+	<sect1 xml:id="preface-4"><title>Acknowledgments</title>
+	<para>
+		Obviously, greatest thanks go to my Wife, Ada, and kids: Iga and Mikolaj, for understanding and support.
+	</para>
+	<para>
+		There are numerous people that had direct or indirect influence on this guide. OpenSolaris and later illumos and OpenZFS community members, without whom I'd never have a privilege to work with fantastic technology. Polish OpenSolaris User Group, which I have led for few years, undertook great effort of translating original ZFS Administration Guide, in which I took part. Nexenta Systems, Inc., where I have finally installed and serviced many ZFS storage arrays.
+	</para>
+	<para>
+		The people that I would like to thanks personally are (in no specific order): Dariusz Ankowski, Pete Turner, Matt Green, Andy Bennett, Daniel Borek, Jason Banham, Tim Foster, Darryl Clark, Maciej Jan Broniarz, Claudia Hildebrandt, Ryuji Masuda, Robert Mustacchi, Matt Ahrens, Michal Nowak. They may even not know it, but almost all my ZFS-foo I've learnt from them.
+	</para>
+	<para>
+		People not directly involved with ZFS, but very helpful, helping me learn Linux better or simply telling me, that I can do this: Marcin Juszkiewicz, Grzegorz Adamowicz, Leszek Krupinski.
+	</para>
+	</sect1>
+	<sect1 xml:id="preface-6"><title>Typographic conventions</title>
+		<para>I use various typographic notations through this book to hint on a special meaning. Explanation in the table below.</para>
+		<table frame="topbot">
+			<title>Typographic Conventions</title>
+			<tgroup cols="3" colsep="0" rowsep="0"><colspec colwidth="80*"/><colspec colwidth="179*"/><colspec colwidth="137*"/>
+			<thead>
+				<row rowsep="1">
+					<entry align="left"><para>Font</para></entry>
+					<entry align="left"><para>Meaning</para></entry>
+					<entry align="left"><para>Example</para></entry>
+				</row>
+			</thead>
+			<tbody>
+				<row>
+					<entry><para><literal>AaBbCc123</literal></para></entry>
+					<entry><para>Commands, filenames, directories, whenever they are not a part of larger listing. </para></entry>
+					<entry><para>Edit the <filename>zfs-sudoers</filename> file. </para><para>Use <userinput><command>sudo zfs list</command> <option>-t all</option></userinput> to see all filesystems and snapshots.</para></entry>
+				</row>
+				<row>
+					<entry><para><userinput>AaBbCc123</userinput></para></entry>
+					<entry><para>The commands or input you are supposed to provide to the computer.</para></entry>
+					<entry><para><computeroutput>computer%</computeroutput> <userinput>sudo zfs list</userinput></para></entry>
+				</row>
+				<row>
+					<entry><para><replaceable>aabbcc123</replaceable></para></entry><entry><para>Placeholder: whenever you need to replace whatever I typed with your real value</para></entry>
+					<entry><para>To create a single disk pool type in <command>sudo zpool create datapool </command> <replaceable>/dev/sdb</replaceable>.</para></entry>
+				</row>
+				<row>
+					<entry><para><emphasis>AaBbCc123</emphasis></para></entry>
+					<entry><para>Any text I feel you should pay special attention to.</para></entry>
+					<entry><para>Look this command up in <citetitle>zpool man page</citetitle>. </para>
+					<para>An <emphasis>l2arc</emphasis> device would, in most cases, greatly speed up your read performance.</para>
+					</entry>
+				</row>
+		</tbody>
+		</tgroup>
+		</table>
+	</sect1>
+	<sect1 xml:id="preface-7"><title>About me</title>
+	<para>
+		Long time illumos and ZFS enthusiast, I've worked with ZFS storage from few hundred gigabytes up to hundreds of terabytes capacity. For several years a Field Engineer at Nexenta Systems, Inc., a Software Defined Storage company, installed and supported large number of company's customers. I have been an active member of OpenSolaris and later on illumos communities, with special interest in ZFS, and later OpenZFS. I started working professionally with Linuxes in 1999 and since then used Linuxes and Unices exclusively on my servers and desktops.
+	</para>
+	<para>
+		My professional Curriculum Vitae is hosted at <ulink url="https://pl.linkedin.com/in/damian-wojsław-559722a0">LinkedIn Profile</ulink>.
+	</para>
+	<para>
+		I also have a <ulink url="http://twitter.com/damian_wojslaw">Twitter account</ulink> that may be of some interest.
+	</para>
+	<para>
+		Currently I'm trying to revive <ulink url="https://github.com/rmustacc/illumos-docbooks">illumos Documentations</ulink>, especially the ZFS Admin Guide.
+	</para>
+	</sect1>
+	<sect1 xml:id="preface-8">
+		<title>How this book is organized?</title>
+		<para>The following table describes the chapters in this book.</para>
+		<informaltable frame="topbot">
+			<tgroup cols="2" colsep="0" rowsep="0">
+				<colspec colwidth="29.96*"/>
+				<colspec colwidth="70.04*"/>
+				<thead>
+					<row rowsep="1">
+						<entry><para>Chapter</para></entry>
+						<entry><para>Description</para></entry>
+					</row>
+			<p></p>
+				</thead>
+				<tbody>
+					<row>
+						<entry><para><xref linkend="diy" /></para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="zfsover" /></para></entry>
+						<entry><para>Quick introduction to ZFS. All other things you may want to know are already on the net.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="planning" /></para></entry>
+						<entry><para>Questions you need to ask yourself, before buying hardware.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="installation" /></para></entry>
+						<entry><para>You've chosen the hardware. Now install the system and packages.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="setup" /></para></entry>
+						<entry><para>Create the pool and filesystems.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="advsetup" /></para></entry>
+						<entry><para>Quotas, reservations, snapshots, rollbacks, ACL-s.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="sharing" /></para></entry>
+						<entry><para>Sharing the storage with other systems using CIFS and/or NFS.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="accounting" /></para></entry>
+						<entry><para>Space accounting. Tricky side of ZFS.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="monitoring" /></para></entry>
+						<entry><para>Keep track of your system and pool.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="maintenance" /></para></entry>
+						<entry><para>Maintaining the storage. Expanding the pool. Finding and replacing failed disks.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="tracing" /></para></entry>
+						<entry><para>Determining root cause for pool issues.</para></entry>
+					</row>
+					<row>
+						<entry><para><xref linkend="reading" /></para></entry>
+						<entry><para>Additional sources of ZFS information.</para></entry>
+					</row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+	</sect1>
+</preface>

@@ -3,7 +3,7 @@ FOP=/usr/bin/fop
 export XML_CATALOG_FILES=file:///home/trochej/Projects/sohozfs/catalog.xml
 
 html:
-	${XSLTPROC} -o sohozfs.html --stringparam html.stylesheet css/elements.css docbook.xsl sohozfs.book.xml
+	${XSLTPROC} -xinclude -o sohozfs.html --stringparam html.stylesheet css/elements.css docbook.xsl sohozfs.book.xml
 
 clean: 
 	rm sohozfs.html 
