@@ -2,6 +2,3 @@
 *.pdf
 *.fo
 .directory
-Makefile
-custom.xsl
-catalog.xml

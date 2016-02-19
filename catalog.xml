@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE catalog
+   PUBLIC "-//OASIS/DTD Entity Resolution XML Catalog V1.0//EN"
+   "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+
+  <!-- DTD and stylesheet files installed under /usr/share/xml -->
+  <group  xml:base="file:///usr/share/sgml/docbook/xsl-ns-stylesheets/">
+
+    <!-- To resolve simple DTD SYSTEM identifiers. -->
+    <!-- Note: this does not work with Java resolver -->
+    <!--   classes in Saxon or Xalan -->
+
+    <!-- To resolve short stylesheet references -->
+    <uri
+        name="docbook.xsl"
+        uri="file:///usr/share/sgml/docbook/xsl-ns-stylesheets/xhtml-1_1/docbook.xsl" />
+    <uri 
+        name="chunk.xsl"
+        uri="file:///usr/share/sgml/docbook/xsl-ns-stylesheets/xhtml-1_1/chunk.xsl" />
+    <uri
+        name="fo-docbook.xsl"
+        uri="file:///usr/share/sgml/docbook/xsl-ns-stylesheets/fo/docbook.xsl" />
+
+  </group>
+
+</catalog>
