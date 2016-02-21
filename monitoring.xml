@@ -17,14 +17,14 @@
 	<sect1 xml:id="monitoring-1"><title>What to monitor?</title>
 	<para>
 		One of things to monitor is state of your Aadaptive Replacement Cache (ARC). It is your read cache for the filesystem. The more it stores in RAM, the lower the miss ratio, the better your performance - you will satisfy more requests from memory, totally omitting the need for touching platters of your disks.
-		<programlisting>
+		<screen>
 		<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo arcstat.pl</userinput>
 	<computeroutput>
     time        read  miss  miss%  dmis  dm%  pmis  pm%  mmis  mm%  arcsz     c  
 	10:21:15     0     0      0     0     0     0    0     0    0    8.5G   8.5G 
 		</computeroutput>
-		</programlisting>
+		</screen>
 	</para>
 	</sect1>
 </chapter>

@@ -8,17 +8,17 @@
 	</para>
 	<para>
 	For an rough overview of I/O on your pool, run <command>zpool iostat</command>:
-	<programlisting>
+	<screen>
 [root@localhost ~]# zpool iostat
                capacity     operations    bandwidth
 pool        alloc   free   read  write   read  write
 ----------  -----  -----  -----  -----  -----  -----
 datapool    68.5K  3.97G      0      0      0     12
 
-		</programlisting>
+		</screen>
 
 	For more detailed breakthrough call <command>zpool iostat</command> <option>-v</option>:
-		<programlisting>
+		<screen>
 [root@localhost ~]# zpool iostat -v
 capacity     operations    bandwidth
 pool        alloc   free   read  write   read  write
@@ -31,8 +31,8 @@ datapool    68.5K  3.97G      0      0      0     12
     sdd         -      -      0      0     62    202
     sde         -      -      0      0     62    202
 ----------  -----  -----  -----  -----  -----  -----
-	</programlisting>
-<programlisting>
+	</screen>
+<screen>
 	[root@localhost ~]# vmstat
 procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
@@ -51,14 +51,14 @@ sdd               0.04         0.27         0.17       2520       1571
 sde               0.04         0.27         0.17       2508       1571
 dm-0              0.02         0.17         0.00       1544          0
 dm-1              2.64        52.92        19.94     492670     185663
-</programlisting>
+</screen>
 
 	</para>
 </sect1>
 <sect1 xml:id="tracing-10"><title>zdb</title>
 	<para>
 		ZFS comes with a nice command that is largely undocumented. You wouldn't use it very often, but in some rare occasions it proved quite useful in the field and may gain you additional insight into inner workings of your pool: <indexterm><primary><command>zdb</command></primary></indexterm>. The output of the command looks similar to:
-		<programlisting>
+		<screen>
 	[root@localhost ~]# zdb
 datapool:
     version: 5000
@@ -125,7 +125,7 @@ datapool:
     features_for_read:
         com.delphix:hole_birth
         com.delphix:embedded_data
-		</programlisting>
+		</screen>
 	</para>
 </sect1>
 </chapter>

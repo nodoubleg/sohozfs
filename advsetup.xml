@@ -9,7 +9,7 @@
 	</para>
 	<para>
 		Lets consider a mirrored pool consisting of two vdevs two drives each:
-		<programlisting>
+		<screen>
 			<computeroutput>
 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status</userinput>
 	<computeroutput>
@@ -29,14 +29,14 @@
 
 	errors: No known data errors
 			</computeroutput>
-		</programlisting>
+		</screen>
 		You add a <indexterm><primary>hot spare</primary><secondary>add</secondary></indexterm> hot spare device by running <command>zpool add</command><option>spare</option> command:
-		<programlisting>
+		<screen>
 			<computeroutput>
 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool add datapool -f spare /dev/sdf</userinput>
-		</programlisting>
+		</screen>
 		Confirm the disk has been added by querying the pool's status:
-<programlisting>
+<screen>
 	<computeroutput>
 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool status datapool</userinput>
 	<computeroutput>
@@ -58,16 +58,16 @@
 
 	errors: No known data errors
 			</computeroutput>
-		</programlisting>
+		</screen>
 	</para>
 	<para>
 		<indexterm><primary>hot spare</primary><secondary>remove</secondary></indexterm>
 		In a case you'd wish to remove the spare from the pool, use <command>zpool remove</command> command:
-	<programlisting>
+	<screen>
 		<computeroutput>
 			trochej@ubuntuzfs:~$ sudo zpool remove datapool /dev/sdf
 		</computeroutput>
-	</programlisting>
+	</screen>
 	As previously, you can use <command>zpool status</command> to confirm the change.
 	</para>
 </sect1>
@@ -93,19 +93,19 @@
 	</para>
 	<para>
 		First assumption is, you don't want everyone to run those commands passwordless. Create a special system group to easily add the right to any system operator:
-		<programlisting>
+		<screen>
   		<userinput>
 	sudo groupadd zfsadmin
  		</userinput>
- 		</programlisting>
+ 		</screen>
  		Then add a user to this group (my user login is trochej):
- 		<programlisting>
+ 		<screen>
   		<userinput>
 	usermod -ag zfsadmin trochej
  		</userinput>
- 		</programlisting>
+ 		</screen>
  		Place a file from listing below, or download it from <ulink url="http://completelyfake.eu/zfs-sudoers">my site</ulink> and place in <literal>/etc/sudoers.d/</literal> :
-		<programlisting>
+		<screen>
   		
 	# Allow read-only ZoL commands to be called through sudo
 	# without a password. Remove the first '#' column to enable.
@@ -129,22 +129,22 @@
 	# allow users in zfsadmin group to use basic read-only ZFS commands
 	%zfsadmin ALL = (R_ROOT) NOPASSWD: C_ZFS
  		
- 		</programlisting>
+ 		</screen>
  		The <literal>arcstat.pl</literal> script was added in previous steps.
 	</para>
 	<para>
 		After placing it in <literal>/etc/sudoers.d/</literal> run visudo command and make sure the last line is:
- 		<programlisting>
+ 		<screen>
 
 	#includedir /etc/sudoers.d
 
- 		</programlisting>
+ 		</screen>
  		Last thing to do, is setting up proper file attributes:
- 		<programlisting>
+ 		<screen>
 		<userinput>
 	chmod 0440 /etc/sudoers.d/zfs-sudoers
  		</userinput>
- 		</programlisting>
+ 		</screen>
 	</para>
 	<para>
 		 Next time user trochej logs in, they will be able to run informational zfs and zpool subcommands without need to type in their password. Other commands, that change filesystem and pool state, still need confirmation by typing in their password.

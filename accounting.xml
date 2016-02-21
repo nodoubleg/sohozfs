@@ -5,7 +5,7 @@
 <sect1 xml:id="accounting-1"><title>Understanding space accounting in ZFS</title>
 <para>
 	Due to rich feature set, some relying on filesystem organization, the likes of clones, snapshots and compression, space monitoring needs to be done differently from traditional Linux filesystems. The usual <command>df <option>-h</option></command> command known to each Linux server administrator is no longer sufficient and may even be misleading. You should learn to use two commands and understand their arguments and output to keep track of your free space: <command>sudo zpool list</command> and <command>sudo zfs list</command>, which, on my home workstation commands will produce output as below:
- 	<programlisting>
+ 	<screen>
   	<computeroutput>
   	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
   	<computeroutput>
@@ -19,7 +19,7 @@
 	data          147G  2,53T    96K  /data
 	data/datafs   147G  2,53T   147G  /mnt/data
 	</computeroutput>
-	</programlisting>
+	</screen>
 	This may come as a surprise, but the list about is not complete. This is because list by default omits snapshots. Remember, snapshots consume space increasingly with time, as data change on the snapshotted system. One of very often issues raised by new ZFS storage operators was that they were unable to delete data due to lack of space. They were baffled by both the fact, that deleting data wouldn't increase the available space and that consumed space in ZFS list wouldn't add up to total space available int the pool.
 </para>
 <para>
@@ -27,18 +27,18 @@
 	</para>
 <para>
 	Lets consider a situation when you have a 3 TB pool.
- 	<programlisting>
+ 	<screen>
   	<userinput>
 	sudo zpool create datapool mirror /dev/sdb /dev/sdc
 	sudo zfs create datapool/data
  	</userinput>
- 	</programlisting>
+ 	</screen>
  	After successful import of 2 TB of backed up data, you decide to create snapshot, so that users mistakenly deleting data wouldn't make you rerun the backup restore.
- 	 <programlisting>
+ 	 <screen>
   	<userinput>
 	sudo zfs snapshot datapool/data@after-backup-restore
  	</userinput>
- 	</programlisting>
+ 	</screen>
  	Take a note that running this snapshot is instantaneous and takes no disk space initially.
  </para>
  <para>
@@ -46,7 +46,7 @@
 </para>
 <para>
 	Lets first observe filesystem on my workstation:
-	<programlisting>
+	<screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list</userinput>
 	<computeroutput>
@@ -54,9 +54,9 @@
 	data          134G  2,55T    96K  /data
 	data/datafs   134G  2,55T   134G  /mnt/data
  	</computeroutput>
- 	</programlisting>
+ 	</screen>
  	Now, let me create a snapshot there:
-	 <programlisting>
+	 <screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs snapshot data/datafs@testsnapshot</userinput>
 	<computeroutput>
@@ -67,9 +67,9 @@
 	data/datafs                134G  2,55T   134G  /mnt/data
 	data/datafs@testsnapshot      0      -   134G  -
  	</computeroutput>
- 	</programlisting>
+ 	</screen>
 		Let me now upload a CentOS 7 GB iso file to the <literal>/mnt/data</literal>:
- 	 <programlisting>
+ 	 <screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
 	<computeroutput>
@@ -78,9 +78,9 @@
 	data/datafs                141G  2,54T   134G  /mnt/data
 	data/datafs@testsnapshot  7,14G      -   134G  -
  	</computeroutput>
- 	</programlisting>
+ 	</screen>
  	Notice that the snapshot size has increased up to the newly introduced data. Let me now delete whole directory containing archived ISOs:
- 	 <programlisting>
+ 	 <screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
 	<computeroutput>
@@ -89,10 +89,10 @@
 	data/datafs                141G  2,54T   109G  /mnt/data
 	data/datafs@testsnapshot  32,0G      -   134G  -
  	</computeroutput>
- 	</programlisting>
+ 	</screen>
  	What you will see is that while the REFER size for the data/datafs ZFS filesystem has shrunk, the overall USED stays the same and snapshot size has increased up to 32 GB. For comparison, lets have a look at the <command>df <option>-h</option></command> command (I have removed non-ZFS filesystems from output for clarity:
 
- 	 <programlisting>
+ 	 <screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>df -h</userinput>
 	<computeroutput>
@@ -100,9 +100,9 @@
 	data            2,6T  128K  2,6T   1% /data
 	data/datafs     2,7T  109G  2,6T   5% /mnt/data
  	</computeroutput>
- 	</programlisting>
+ 	</screen>
  	Let me now remove some more data from datafs, just to increase the size of the snapshot:
- 	<programlisting>
+ 	<screen>
  	<computeroutput>
  	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all</userinput>
  	<computeroutput>
@@ -118,11 +118,11 @@
 	data            2,6T  128K  2,6T   1% /data
 	data/datafs     2,6T   24G  2,6T   1% /mnt/data
  	</computeroutput>
- 	</programlisting>
+ 	</screen>
  	As you may notice, there is not much to be gleaned from the du command. It more or less tracks the space usage, but it tells nothing about the pattern. The zfs list on the other hand, tells you quite a lot. By this output alone you can see, that while your filesystem used space has shrunk, the overall used stays the same, it's just moved into another dataset's location. </para>
  	<para>
  		The <command>zfs</command> can provide you with even deeper understanding of how the space is distributed among your data. And while it's not very interesting in the case of the small experiment I've been running so far, I'll provide you with more complicated examples in just a moment. First, howewer, lets check out another option to the <command>zfs list</command>:
- 	 	 <programlisting>
+ 	 	 <screen>
   			<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs list -t all -o space</userinput>
 	<computeroutput>
@@ -131,7 +131,7 @@
 	data/datafs               2,54T   141G      117G   23,3G              0          0
 	data/datafs@testsnapshot      -   117G         -       -              -          -
  	</computeroutput>
- 	</programlisting>
+ 	</screen>
  	More detailed explanation of -o space follows in next section. 
 </para>
 <para>
@@ -139,7 +139,7 @@
 </para>
 <para>
 	As a side note, I was whole the time working on my production data, and while I keep backups, I was confident enough in the snapshot to let me do this:
-	<programlisting>
+	<screen>
 	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs rollback data/datafs@testsnapshot</userinput>
 	<computeroutput>
@@ -150,7 +150,7 @@
 	data/datafs                134G  2,55T   134G  /mnt/data
 	data/datafs@testsnapshot     8K      -   134G  -
 	</computeroutput>
-	</programlisting>
+	</screen>
 </para>
 </sect1>
 <sect1 xml:id="accounting-2"><title>zfs -o space</title>
@@ -182,13 +182,13 @@ The example we went through above is pretty simple. Not much is happening on thi
 			<listitem><para>1 zvol created</para></listitem>
 		</itemizedlist>
 		Lets the this configuration in print:
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ sudo zpool list
 	NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
 	datapool  23.8G  5.37G  18.4G         -    14%    22%  1.00x  ONLINE  -
-		</programlisting>
+		</screen>
 		So the pool says, there is above 18 Gigabytes space free in the pool. Lets look closer:
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ sudo zfs list
 	NAME              USED  AVAIL  REFER  MOUNTPOINT
 	datapool         13.2G  2.41G  34.0K  /datapool
@@ -198,9 +198,9 @@ The example we went through above is pretty simple. Not much is happening on thi
 	datapool/second  50.0K  2.41G  32.0K  /datapool/second
 	datapool/third   50.0K  2.41G  32.0K  /datapool/third
 	datapool/vol01   5.16G  7.57G  16.0K  -
-		</programlisting>
+		</screen>
 		But not exactly. Shouldn't AVAIL number be the same as FREE in <command>zpool list</command> output? After all it is being said, ZFS filesystems can grow up to the pool's capacity. Lets list <emphasis>all</emphasis> datasets then:
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ sudo zfs list -t all
 	NAME                               USED  AVAIL  REFER  MOUNTPOINT
 	datapool                          13.2G  2.41G  34.0K  /datapool
@@ -216,24 +216,24 @@ The example we went through above is pretty simple. Not much is happening on thi
 	datapool/third                    50.0K  2.41G  32.0K  /datapool/third
 	datapool/third@2016-02-17-14:55   18.0K      -  32.0K  -
 	datapool/vol01                    5.16G  7.57G  16.0K  -
-		</programlisting>
+		</screen>
 		Okay. So there are snapshots in play, so it might have taken some of the capacity, but still, why numbers are different among the datasets? Lets first explain the <literal>REFER</literal> column in <command>zfs list</command> output. It states, how much space the dataset is keeping references to. See that in the output above:
-		<programlisting>
+		<screen>
 	datapool/first@2016-02-17-15:04       0      -  3.58G  -
-		</programlisting>
+		</screen>
 		<literal>USED</literal> column is zero, but <literal>REFER</literal>is above 3.5G. That is typical to snapshots. Since the creation of the snapshot no change was introduced to the filesystem datapool/first, thus snapshot does not use any space at the moment. But it keeps references to 3.5 G of data that datapool/first contained at the time of snapshotting. Lets make it use some space now by removign a piece of data I copied over to the datapool:
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ rm /datapool/first/Fedora-Live-KDE-x86_64-23-10.iso 
-		</programlisting>
+		</screen>
 	Check how it looks like right now:
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ sudo zfs list
 	NAME                               USED  AVAIL  REFER  MOUNTPOINT
 	datapool                          14.7G   930M  34.0K  /datapool
 	datapool/first                    9.50G  4.91G   741M  /datapool/first
-		</programlisting>
+		</screen>
 		So, the filesystem datapool/first consumes 9.5G of space, fur references 741M only? Where is the rest of the claimed space consumption? First, run zfs list -t all, to see not only filesystems, but snapshots also:
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ sudo zfs list -t all
 	NAME                               USED  AVAIL  REFER  MOUNTPOINT
 	datapool                          14.7G   930M  34.0K  /datapool
@@ -248,16 +248,16 @@ The example we went through above is pretty simple. Not much is happening on thi
 	drwxr-xr-x 2 trochej trochej    3 Feb 17 15:25 .
 	drwxr-xr-x 7 trochej trochej    7 Feb 17 14:51 ..
 	-rw-r----- 1 trochej trochej 741M Feb 17 15:21 FreeBSD-11.0-CURRENT-amd64-20151130-r291495-disc1.iso
-		</programlisting>
+		</screen>
 		Okay. So the filesystem holds 741M of data, but its snapshots consume 1.20GB of space. That's more like it. Still, where's the rest of my space gone?
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ sudo zfs list -t all -o space
 	NAME                              AVAIL   USED  USEDSNAP  USEDDS  USEDREFRESERV  USEDCHILD
 	datapool/first                    4.91G  9.50G     4.78G    741M             4G          0
 	datapool/first@2016-02-17-14:55       -  18.0K         -       -              -          -
 	datapool/first@2016-02-17-15:04       -  18.0K         -       -              -          -
 	datapool/first@2016-02-17-15:22       -  1.20G         -       -              -          -
-		</programlisting>
+		</screen>
 		The output is cut out for brevity. The datapool/first filesystem consumes 4.78G in snapshots. 4G is used by refreservation property set on the filesystem, giving it 4G of free space at cost of other filesystems. Reservations have been explained in <xref linkend="advsetup-5" />.
 
 	</para>

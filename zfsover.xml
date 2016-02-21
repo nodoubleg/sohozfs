@@ -47,7 +47,7 @@
 	</para>
 	<para>
 		Given four drives: <literal>/dev/sdb</literal>, <literal>/dev/sdc</literal>, <literal>/dev/sdd</literal> and <literal>/dev/sde</literal>, first step is presented below. First recommended command removes partition table from devices. I am not sure it is required step, but I'll follow the documentation. If you don't know what drives are available on your system, use <command>lsblk</command> command. The <option>-S</option> switch makes it print only SCSI devices:
-		<programlisting>
+		<screen>
 	trochej@ubuntuzfs:~$ lsblk -S
 	NAME HCTL       TYPE VENDOR   MODEL             REV TRAN
 	sda  2:0:0:0    disk ATA      VBOX HARDDISK    1.0  sata
@@ -64,9 +64,9 @@
 	sdl  13:0:0:0   disk ATA      VBOX HARDDISK    1.0  sata
 	sdm  14:0:0:0   disk ATA      VBOX HARDDISK    1.0  sata
 	sr0  1:0:0:0    rom  VBOX     CD-ROM           1.0  ata
-		</programlisting>
+		</screen>
 		Before running any destructive action, look at outputs from <command>fdisk <option>-l</option></command> and <command>mount</command> commands, to avoid breaking drives already in use by your system.
-	<programlisting>	
+	<screen>	
 	<computeroutput>
 	[root@localhost ~]#</computeroutput> <userinput>dd if=/dev/zero of=/dev/sdb \
 		bs=512 count=1</userinput>
@@ -96,11 +96,11 @@
 	1+0 records out
 	512 bytes (512 B) copied, 0.00181138 s, 283 kB/s
 	</computeroutput>
-	</programlisting>
+	</screen>
 	<indexterm><primary>LVM</primary><secondary>pvcreate</secondary></indexterm>
 		Next, <command>pvcreate</command> is used to label disks as physical devices:
 	
-		<programlisting>
+		<screen>
 	<computeroutput>	
 	[root@localhost ~]#</computeroutput> <userinput>pvcreate /dev/sdb \
 		/dev/sdc /dev/sdd /dev/sde</userinput>
@@ -110,24 +110,24 @@
   	Physical volume "/dev/sdd" successfully created
   	Physical volume "/dev/sde" successfully created
 	</computeroutput>	
-</programlisting>
+</screen>
 
 	<indexterm><primary>LVM</primary><secondary>vgcreate</secondary></indexterm>
 		Next step creates logical volume group:
 
-		<programlisting>
+		<screen>
 	<computeroutput>	
 	[root@localhost ~]#</computeroutput> <userinput>vgcreate vg1 /dev/sdb \
 		/dev/sdc /dev/sdd /dev/sde</userinput>
 	<computeroutput>
   	Volume group "vg1" successfully created
 	</computeroutput>
-</programlisting>
+</screen>
 
 	<indexterm><primary>LVM</primary><secondary>vgdisplay</secondary></indexterm>
 		We can now confirm that the group was created and, in fact, consists of the four physical devices we intended:
 
-<programlisting>
+<screen>
 	<computeroutput>
 	[root@localhost ~]#</computeroutput> <userinput>vgdisplay vg1</userinput>
 	<computeroutput>
@@ -152,12 +152,12 @@
 	Free  PE / Size       2044 / 7.98 GiB
 	VG UUID               QwkE3X-H1jO-gzAZ-JXAF-FPGQ-0D43-C06JyD
 </computeroutput>
-		</programlisting>
+		</screen>
 
 	<indexterm><primary>LVM</primary><secondary>lvcreate</secondary></indexterm>
 	Next step involves actually creating the RAID logical volume and checking that it actually exists:
 
-	<programlisting>
+	<screen>
 		<computeroutput>
 	[root@localhost ~]#</computeroutput> <userinput>lvcreate -L 4000M -m1 \
 		-n mirrorlv vg1</userinput>
@@ -183,14 +183,14 @@
 	- currently set to     8192
 	Block device           253:6
 </computeroutput>
-	</programlisting>
+	</screen>
 	</para>
 	<para>
 
 		<indexterm><primary>mkfs.ext4</primary></indexterm>
 		Now, this is not all. Before being able to mount the volume, you first need to create a filesystem on it:
 
-		<programlisting>
+		<screen>
 			<computeroutput>
 	[root@localhost ~]#</computeroutput> <userinput>mkfs.ext4 /dev/vg1/mirrorlv</userinput>
 	<computeroutput>
@@ -222,19 +222,19 @@
 	/dev/mapper/vg1-mirrorlv on /mnt type ext4 (rw,relatime,
 	seclabel,data=ordered)
 </computeroutput>
-		</programlisting>
+		</screen>
 		<emphasis>NOW</emphasis> you are done.
 	</para>
 	<para>
 		<indexterm><primary>zpool</primary><secondary>create</secondary></indexterm>
 		Lets now create configuration as above with ZFS.
-		<programlisting>
+		<screen>
 	<computeroutput>		
 	[root@localhost src]#</computeroutput> <userinput>zpool create -f datapool mirror /dev/sdb \
 		/dev/sdc mirror /dev/sdd /dev/sde</userinput>
-	</programlisting>
+	</screen>
 	We can now confirm the configuration with <command>zpool list</command> and <command>zfs list</command> commands:
-	<programlisting>
+	<screen>
 	<computeroutput>
 	[root@localhost src]#</computeroutput> <userinput>zpool list</userinput>
 	<computeroutput>
@@ -246,9 +246,9 @@
 	NAME       USED  AVAIL  REFER  MOUNTPOINT
 	datapool    49K  3.84G    19K  /datapool
 </computeroutput>
-		</programlisting>
+		</screen>
 	Here. It's done. You have a pool consisting of two mirrored vdevs and a filesystem mounted at /datapool. You can confirm pool layout by running:
-	<programlisting>
+	<screen>
 		<computeroutput>
 	[root@localhost src]#</computeroutput> <userinput>zpool status datapool</userinput>
 	<computeroutput>
@@ -268,7 +268,7 @@
 
 errors: No known data errors
 </computeroutput>
-	</programlisting>
+	</screen>
 	That's it. You are free to create filesystems within the pool to your liking or just use the original datapool filesystem.
 </para>
 </sect1>
@@ -418,7 +418,7 @@ errors: No known data errors
 	</para>
 	<para>
 		The ashift option can only be used during pool setup or when adding a new device to a vdev. Which brings another issue: if you create a pool setting up ashift and later add a disk not setting it, your performance may go awry due to mismatched ashift parameters. If you know you may have used the option or are unsure, always check it before adding new devices:
-	<programlisting>
+	<screen>
   	<computeroutput><indexterm><primary>zpool</primary><secondary>list</secondary></indexterm>
   	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
   	<computeroutput>
@@ -464,13 +464,13 @@ errors: No known data errors
 	data  feature@embedded_data       active               local
 	data  feature@bookmarks           enabled              local
 	</computeroutput>
- 	</programlisting>
+ 	</screen>
  		As you may have noticed, I let ZFS auto detect the value.
 	</para>
 	<para>
 		<indexterm><primary>smartctl</primary></indexterm>
 		If you are unsure about the AL status for your drives using <command>smartctl</command> command:
-		<programlisting>
+		<screen>
 			<computeroutput>
 	[trochej@madtower sohozfs]$</computeroutput> <userinput>sudo smartctl -a /dev/sda</userinput>
 	<computeroutput>
@@ -495,13 +495,13 @@ errors: No known data errors
 	SMART support is: Available - device has SMART capability.
 	SMART support is: Enabled
 			</computeroutput>
-		</programlisting>
+		</screen>
 		You will notice that my drive has line:
-		<programlisting>
+		<screen>
 			<computeroutput>
 	Sector Sizes:     512 bytes logical, 4096 bytes physical			
 			</computeroutput>
-		</programlisting>
+		</screen>
 		It tells you that drive has physical layout of 4096 bytes, but driver advertises 512 bytes for backwards compatibility.
 	</para>
 	<para>
@@ -525,24 +525,24 @@ errors: No known data errors
 <para>
 	<indexterm><primary>zpool</primary><secondary>list</secondary></indexterm>
 	Deduplication ratio is by default displayed by <command>zpool list</command> command. Ratio of 1.00 means no deduplication happened:
-	<programlisting>
+	<screen>
   	<computeroutput>
   	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
   	<computeroutput>
 	NAME SIZE  ALLOC FREE  EXPANDSZ FRAG CAP DEDUP HEALTH ALTROOT
 	data 2,72T 133G  2,59T    -     3%    4% 1.00x ONLINE    -
 	</computeroutput>
-</programlisting>
+</screen>
 	<indexterm><primary>ZFS</primary><secondary>deduplication</secondary></indexterm>
 	You can check the deduplication setting by querying your filesystems <option>deduplication</option> property:
-	<programlisting>
+	<screen>
   	<computeroutput>
   	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs get dedup data/datafs</userinput>
   	<computeroutput>
 	NAME         PROPERTY  VALUE          SOURCE
 	data/datafs  dedup     off            default
 	</computeroutput>
-</programlisting>
+</screen>
 	Deduplication is a setting set per filesystem.
 </para>
 </sect1>
@@ -553,7 +553,7 @@ errors: No known data errors
 <para>
 	The compression can be set by on filesystem basis:
 	<indexterm><primary>ZFS</primary><secondary>compression</secondary></indexterm>
-	<programlisting>
+	<screen>
 		<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs get compression data/datafs</userinput>
 	<computeroutput>
@@ -561,46 +561,46 @@ errors: No known data errors
 	data/datafs  compression  on        local
 
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs set compression=on data/datafs</userinput>
-	</programlisting>
+	</screen>
 	Compression ratio can be found out by querying a property:
-	<programlisting>
+	<screen>
 		<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs get compressratio data/datafs</userinput>
 	<computeroutput>
 	NAME         PROPERTY       VALUE  SOURCE
 	data/datafs  compressratio  1.26x  
 		</computeroutput>
-	</programlisting>
+	</screen>
 </para>
 <para>
 	Several compression algorithms are available. If you simply turn compression on, <literal>lzjb</literal> algorithm is used. It is considered a good compromise between performance and compression ratio. Other compression algorithms available to you are listed in <command>zfs</command> man page. A new algorithm is lz4. It has higher performance and higher compression ratio than lzjb. It can only be enabled for pools that have <literal>feature@lz4_compress</literal> feature flag property:
-	<programlisting>
+	<screen>
 		<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool get feature@lz4_compress data</userinput>
 	<computeroutput>
 	NAME  PROPERTY              VALUE                 SOURCE
 	data  feature@lz4_compress  active                local
 		</computeroutput>
-	</programlisting>
+	</screen>
 	If the feature is enabled, you can set compression=lz4 for any given dataset. You can enable it by invoking command:
-	<programlisting>
+	<screen>
 		<computeroutput>
 	trochej@madchamber:~$ <userinput>sudo zpool set feature@lz4_compress=enabled data</userinput>
 		</computeroutput>
-	</programlisting>
+	</screen>
 </para>
 </sect1>
 <sect1 xml:id="zfsover-11"><title>ZFS pool state</title>
 <para>
 	If you look again at the listing of my pool:
-	<programlisting>
+	<screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool list</userinput>
 	<computeroutput>
 	NAME SIZE  ALLOC FREE  EXPANDSZ FRAG CAP DEDUP HEALTH ALTROOT
 	data 2,72T 133G  2,59T    -     3%   4%  1.00x ONLINE -
 	</computeroutput>
-</programlisting>
+</screen>
 	You will notice a column called <indexterm><primary>ZFS</primary><secondary>pool HEALTH</secondary></indexterm><emphasis>HEALTH</emphasis>. 
 </para>
 <para>
@@ -614,7 +614,7 @@ errors: No known data errors
 		<listitem><para><indexterm><primary>ZFS</primary><secondary>pool REMOVED</secondary></indexterm>REMOVED - if your hardware supports it, when disk is physically removed without first removing it from pool using zpool command, it will be marked as REMOVED.</para></listitem>
 	</itemizedlist>
 	Checking pool health explicitly is done using zpool status and zpool status -x command:
-	<programlisting>
+	<screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool status -x</userinput>
 	<computeroutput>
@@ -632,9 +632,9 @@ errors: No known data errors
 
 	errors: No known data errors
 	</computeroutput>
-</programlisting>
+</screen>
 <literal>zpool status</literal> will print detailed health and configuration of all pool devices. When pool consists of hundreds of disks, it may be troublesome to fish out a faulty device. To that end you can use <literal>zpool status -x</literal>, which will print only status of pools that experienced issues.
-	<programlisting>
+	<screen>
   	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool status -x</userinput>
 	<computeroutput>
@@ -656,7 +656,7 @@ errors: No known data errors
 
 	errors: No known data errors
 	</computeroutput>
-</programlisting>
+</screen>
 </para>
 <para>
 	Further details are out of the scope of this book. You should visit <ulink url="http://completelyfake.eu/illumos/docs/zfsadmin/">ZFS Administrator Guide</ulink> managed by illumos, OpenZFS and OpenIndiana community. You should also study <command>zfs</command> and <command>zpool</command> commands' man pages.
@@ -672,7 +672,7 @@ errors: No known data errors
 	</para>
 	<para>
 		If you look again at the <literal>zpool</literal> command output for my host:
-	<programlisting>
+	<screen>
   	<computeroutput>
   	trochej@madchamber:~$</computeroutput><userinput> sudo zpool get all data</userinput>
 	<computeroutput>
@@ -711,9 +711,9 @@ errors: No known data errors
 	data  feature@embedded_data       active               local
 	data  feature@bookmarks           enabled              local
 	</computeroutput>
- 	</programlisting>
+ 	</screen>
  	You will notice that last few properties start with <emphasis>feature@</emphasis> string. That's the feature flags you need to look for. The find out the all supported versions and feature flags run commands: <literal>sudo zfs upgrade -v</literal> and <literal>sudo zpool upgrade -v</literal> as in examples below:
- 	<programlisting>
+ 	<screen>
  	<computeroutput>
  	trochej@madchamber:~$</computeroutput> <userinput>sudo zfs upgrade -v</userinput>
  	<computeroutput>
@@ -795,12 +795,12 @@ errors: No known data errors
 	For more information on a particular version, including 
 	supported releases, see the ZFS Administration Guide.
 	</computeroutput>
- 	</programlisting>
+ 	</screen>
  		The both commands above printed information on maximum level of ZFS pool and filesystem versions and what feature flags are available for them.
  	</para>
  	<para>
  		Current version of you pool and filesystems can be checked with <literal>zpool upgrade</literal> and <literal>zfs upgrade</literal> commands:
- 	<programlisting>
+ 	<screen>
  	<computeroutput>
 	trochej@madchamber:~$</computeroutput> <userinput>sudo zpool upgrade</userinput>
 	<computeroutput>
@@ -819,7 +819,7 @@ errors: No known data errors
 	All filesystems are formatted with the current version.
 	</computeroutput>
 
- 	</programlisting>
+ 	</screen>
 	</para>
 </sect1>
 </chapter>
