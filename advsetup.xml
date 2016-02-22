@@ -70,6 +70,9 @@
 	</screen>
 	As previously, you can use <command>zpool status</command> to confirm the change.
 	</para>
+	<para>
+		You can have hot spare shared among more than one pool. You could create a pool <literal>mirrored</literal> that hosts very important data or data than needs to be very fast streamed. You could then create a second pool <literal>raidz</literal> that needs more space but is not that very critical (still redundant, but can only loose one disk). You can then have a hot spare assigned to both pools. The one which has failed device first, will claim hot spare device and then the device will not be usable for the second pool until freed. Replacing failed device and freeing hot spare is explained in Maintenance chapter.
+	</para>
 </sect1>
 <sect1 xml:id="advsetup-2"><title>ZIL device</title>
 </sect1>
