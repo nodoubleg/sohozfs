@@ -75,7 +75,16 @@
 	</para>
 </sect1>
 <sect1 xml:id="advsetup-2"><title>ZIL device</title>
-
+	<para>
+		<indexterm><primary>ZIL</primary></indexterm>
+		<literal>ZIL</literal> translates to ZFS Intent Log. It is a portion of data blocks that store persistently write cache. Normally ZFS will allocate some blocks from the storage pool itself. However, due to pool being busy and usually on spinning disk, the performance may not be satisfying.
+	</para>
+	<para>
+		To better accommodate performance requirements, ZIL (called also SLOG) can be moved to a separate device. Requirement is that device is boot persistent, so that sudden power failure does not mean lost transaction data. In case of RAM based devices, they must be battery or capacitor powered. You can also use SSD device. 
+	</para>
+	<para>
+		<ulink url="http://completelyfake.eu/illumos/docs/zfsadmin/zfsadmin.html">ZFS Admin Guide</ulink> suggests ZIL to be no less than 64 MB (it is the hard requirement for any device to be used by ZFS) and at most 1/2 of RAM. So for the 32 GB of RAM 16 GB ZIL device should be used.
+	</para>
 </sect1>
 <sect1 xml:id="advsetup-3"><title>L2ARC device (cache)</title>
 </sect1>

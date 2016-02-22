@@ -180,7 +180,7 @@
 <sect1 xml:id="installation-3"><title>ZED</title>
 <indexterm><primary>ZFS</primary><secondary>zed</secondary></indexterm>
 	<para>
-		As mentioned previously, zed is a daemon that will listen to kernel events related to ZFS. Upon receiving it will conduct any action defined in so called ZEDLETs - a script or program that will carry on whatever action it's supposed to do.
+		As mentioned previously, zed is a daemon that will listen to kernel events related to ZFS. Upon receiving it will conduct any action defined in so called ZEDLETs - a script or program that will carry on whatever action it's supposed to do. ZED is a Linux-specific daemon. In <literal>illumos</literal> distributions FMA is the layer responsible for carrying out corrective actions. 
 	</para>
 	<para>
 		Writing ZEDLETs is a topic beyond this guide, but the daemon is essential for two important tasks: monitoring pool health and reporting it (via mail) and replacing failed drive with a hot spare. 
