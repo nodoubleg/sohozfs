@@ -98,10 +98,10 @@
 <sect2 xml:id="advsetup-7-2"><title>Enabling POSIX ACL-s</title>
 <indexterm><primary>ACL</primary><secondary>enable</secondary></indexterm>
 	<para>
-		ZFS by default uses NFSv4 ACL-s that conform to NT-style ACL-s. Unfortunately, the administration has been merged into <command>chmod</command> and <command>ls</command> commands. Those modifications are not available in GNU/Linux versions of those tools. Implementation has been deemed non trivial by Zfs On Linux project. Fortunately, since version <literal>0.6.3</literal> of ZoL you can use POSIX ACL-s. 
+		ZFS by default uses NFSv4 ACL-s that conform to NT-style ACL-s. Unfortunately, the administration has been merged into <command>chmod</command> and <command>ls</command> commands. Those modifications are not available in GNU/Linux versions of those tools, nor are they available yet for <command>setfacl></command> and <command>getfacl</command>. Implementation has been deemed non trivial by ZFS On Linux project. Fortunately, since version <literal>0.6.3</literal> of ZoL you can use POSIX ACL-s. There is an implementation of NFSv4 ALC-s for Linux, but it's deemed unstable as of yet and not ready for production.
 	</para>
 	<para>
-		To use the PPOSIX ACL-s you need to set acltype on filesystem you intend to use ACL-s with. The setting is inheritable, which means, that setting it on a root dataset level will automatically set it to the same type on children:
+		To use the POSIX ACL-s you need to set acltype on filesystem you intend to use ACL-s with. The setting is inheritable, which means, that setting it on a root dataset level will automatically set it to the same type on children:
 		<screen>
 	trochej@ubuntuzfs:~$ sudo zfs set acltype=posixacl datapool
 
@@ -112,6 +112,9 @@
 	</para>
 </sect2>
 <sect2 xml:id="advsetup-7-3"><title>Crash course in POSIX ACL-s</title>
+	<para>
+		To have best overview of POSIX ACL-s on Linux go and read <ulink url="http://man7.org/linux/man-pages/man1/setfacl.1.html">http://man7.org/linux/man-pages/man1/setfacl.1.html</ulink> man page. It has pretty good explanation and few examples.
+	</para>
 </sect2>
 </sect1>
 <sect1 xml:id="advsetup-8"><title>Pool properties</title>
