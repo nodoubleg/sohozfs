@@ -82,6 +82,25 @@
 <sect1 xml:id="advsetup-6"><title>Snapshots and clones</title>
 </sect1>
 <sect1 xml:id="advsetup-7"><title>ACL-s</title>
+<sect2 xml:id="advsetup-7-1"><title>Overview</title>
+</sect2>
+<sect2 xml:id="advsetup-7-2"><title>Enabling POSIX ACL-s</title>
+	<para>
+		ZFS by default uses NFSv4 ACL-s that conform to NT-style ACL-s. Unfortunately, the administration has been merged into <command>chmod</command> and <command>ls</command> commands. Those modifications are not available in GNU/Linux versions of those tools. Implementation has been deemed non trivial by Zfs On Linux project. Fortunately, since version <literal>0.6.3</literal> of ZoL you can use POSIX ACL-s. 
+	</para>
+	<para>
+		To use the PPOSIX ACL-s you need to set acltype on filesystem you intend to use ACL-s with. The setting is inheritable, which means, that setting it on a root dataset level will automatically set it to the same type on children:
+		<screen>
+	trochej@ubuntuzfs:~$ sudo zfs set acltype=posixacl datapool
+
+	trochej@ubuntuzfs:~$ sudo zfs get acltype datapool/first
+	NAME            PROPERTY  VALUE     SOURCE
+	datapool/first  acltype   posixacl  inherited from datapool
+		</screen>
+	</para>
+</sect2>
+<sect2 xml:id="advsetup-7-3"><title>Crash course in POSIX ACL-s</title>
+</sect2>
 </sect1>
 <sect1 xml:id="advsetup-8"><title>Pool properties</title>
 </sect1>
