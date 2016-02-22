@@ -548,7 +548,7 @@ errors: No known data errors
 </sect1>
 <sect1 xml:id="zfsover-10"><title>Compression</title>
 <para><indexterm><primary>Compression</primary></indexterm>
-	An option that saves me both disk space and add some speed is compression. There are several compression algorithms available for use by ZFS. Basically, you can tell filesystem to compress any block of data it will write to disk. With modern CPUs, you can usually add some speed by writing smaller physical data. You processors should be able to cope with packing and unpacking data on the fly. Exception can be data that compress badly, ie. mp3, jpg or video. Textual data (application logs etc.) usually play well with this option. For my personal use, I always turn it on.
+	An option that saves me both disk space and add some speed is compression. There are several compression algorithms available for use by ZFS. Basically, you can tell filesystem to compress any block of data it will write to disk. With modern CPUs, you can usually add some speed by writing smaller physical data. You processors should be able to cope with packing and unpacking data on the fly. Exception can be data that compress badly, ie. mp3, jpg or video. Textual data (application logs etc.) usually play well with this option. For my personal use, I always turn it on. Default compression for ZFS is lzjb.
 </para>
 <para>
 	The compression can be set by on filesystem basis:
