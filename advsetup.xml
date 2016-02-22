@@ -30,7 +30,7 @@
 	errors: No known data errors
 			</computeroutput>
 		</screen>
-		You add a <indexterm><primary>hot spare</primary><secondary>add</secondary></indexterm> hot spare device by running <command>zpool add</command><option>spare</option> command:
+		You add a <indexterm><primary>hot spare</primary><secondary>add</secondary></indexterm> hot spare device by running <command>zpool add</command> <option>spare</option> command:
 		<screen>
 			<computeroutput>
 	trochej@ubuntuzfs:~$</computeroutput> <userinput>sudo zpool add datapool -f spare /dev/sdf</userinput>
@@ -75,6 +75,7 @@
 	</para>
 </sect1>
 <sect1 xml:id="advsetup-2"><title>ZIL device</title>
+
 </sect1>
 <sect1 xml:id="advsetup-3"><title>L2ARC device (cache)</title>
 </sect1>
