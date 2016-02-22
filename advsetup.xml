@@ -82,9 +82,21 @@
 <sect1 xml:id="advsetup-6"><title>Snapshots and clones</title>
 </sect1>
 <sect1 xml:id="advsetup-7"><title>ACL-s</title>
+<indexterm><primary>ACL</primary></indexterm>
 <sect2 xml:id="advsetup-7-1"><title>Overview</title>
+	<para>
+		<indexterm><primary>ACL</primary><secondary>overview</secondary></indexterm>
+		I assume you are a Linux/Unix user for some time now, so I believe explanation for control access in Linux is not needed. You may however never come to use ACL-s, especially if your organization is pretty small. ACL stand for <literal>Access Control List</literal>. This is a list of additional (above traditional <literal>user</literal>, <literal>group</literal>,<literal>others</literal>) access rights management for files and directories. 
+	</para>
+	<para>
+		Imagine a simple scenario, where you have several filesystems or directories. Some of them contain data that are sensitive and should only be available to a certain group of users. Imagine then, that a single user must access a single file in those directories for a given time or indefinitely. You may create a new group and change group ownership of the file, then add appropriate users to the group. But then, lets imagine, that a new user needs to have access to this file and several others, but the original user needs to have access to this file only. You will then need to move files into new directories or maybe start making copies. Or use ACL-s.
+	</para>
+	<para>
+		ACL-s are fine grained access control mechanism, that lets you define access privileges per file or directory even for a single user. In the example above, you would simply allow original user read right for the file they need to access and for the new user on files they have to access. 
+	</para>
 </sect2>
 <sect2 xml:id="advsetup-7-2"><title>Enabling POSIX ACL-s</title>
+<indexterm><primary>ACL</primary><secondary>enable</secondary></indexterm>
 	<para>
 		ZFS by default uses NFSv4 ACL-s that conform to NT-style ACL-s. Unfortunately, the administration has been merged into <command>chmod</command> and <command>ls</command> commands. Those modifications are not available in GNU/Linux versions of those tools. Implementation has been deemed non trivial by Zfs On Linux project. Fortunately, since version <literal>0.6.3</literal> of ZoL you can use POSIX ACL-s. 
 	</para>
