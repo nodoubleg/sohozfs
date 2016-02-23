@@ -198,7 +198,7 @@
 
 	# Email address of the zpool administrator.
 	#   Email will only be sent if ZED_EMAIL is defined.
-	ZED_EMAIL="damian@wojslaw.pl"
+	ZED_EMAIL="admin@example.net"
 
 	# Email verbosity.
 	#   If set to 0, suppress email if the pool is healthy.
