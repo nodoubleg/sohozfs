@@ -22,7 +22,7 @@
 </sect1>
 <sect1 xml:id="sharing-4"><title>Other sharing protocols</title>
 	<para>
-		You may want to share a ZFS <indexterm><primary>zvol</primary></indexterm> as an <indexterm><primary>iscsi</primary></indexterm> block device. Doing so on Linux platform is very easy. 
+		You may want to share a ZFS <indexterm><primary>zvol</primary></indexterm> as an <indexterm><primary>iscsi</primary></indexterm> block device. Doing so on Linux platform is very easy. One of the most common ways, probably, is use of iSCSI. It is a SCSI device communication protocol implemented on top of TCP/IP. 
 	</para>
 	<para>
 		<screen>
