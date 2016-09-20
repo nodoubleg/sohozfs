@@ -272,6 +272,11 @@ errors: No known data errors
 	That's it. You are free to create filesystems within the pool to your liking or just use the original datapool filesystem.
 </para>
 </sect1>
+<sect1 xml:id="zfsover-2"><title>Where to get ZFS on Linux?</title>
+	<para>
+		The main source of information about ZFS on Linux implementation, current state and roadmap lives on the project's home page: http://zfsonlinux.org/. Since Ubuntu Xenial Xerus, the 16.04 LTS Ubuntu release though, Canonical has made ZFS a regular, supported filesystem. While you can't use it during installation phase, at least not easily, yet, it is readily available for use and as a matter of fact it is a default filesystem for LXD containers. 
+	</para>
+</sect1>
 <sect1 xml:id="zfsover-3"><title><indexterm><primary>ZFS</primary> <secondary>basics</secondary></indexterm>ZFS basics</title>
 	<para>
 			To work with ZFS you will have to understand it's technical side and bit of implementation. Lots of in field failures I have seen stemmed from the fact, that people were trying to administer or even troubleshoot ZFS filesystems without really understanding what and why they were doing. Working against the design and limitations caused few times data loss. ZFS goes great lengths to protect your data, but nothing in the world is user proof. If you try really hard - you will break it. 
