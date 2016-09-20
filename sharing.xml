@@ -2,17 +2,279 @@
 
 <chapter xml:id="sharing" xmlns="http://docbook.org/ns/docbook" xmlns:xi="http://www.w3.org/2001/XInclude" version="5.0">
 <title>Sharing</title>
-<sect1 xml:id="sharing-1"><title>NFS - builtin</title>
+<sect1 xml:id="sharing-1"><title>Sharing protocols</title>
+	<para>
+		As with any storage array, there are two basic ways you can share the disk space: either as a character device or a block device. Given the DYI small storage array, characted device would be one of two popular network filesystem sharing protocols: NFS or CIFS, and block would be iSCSI protocol most probably. While you have freedom of chosing also an FC or FCoE protocols, I am not going to cover them here.
+	</para>
+	<para>
+		Original ZFS implementation allows for a quick sharing through NFS and CIFS protocols. The commands are tightly bound with ZFS itself and are represented at a filesytsem or a <indexterm><primary>zvol</primary></indexterm> property. Currently, at the moment this guide is written, the native ZFS share commands don't work with Linux platform. As with ACLs, you need to use Linux native tools, iscsiadm, samba, nfs server, to provide this functionality.
+	</para>
+	<para>
+		Please, be aware that describing complex NFS, Samba or iSCSI configurations warrant a separate book on its own for each of the protocols. Those are very out of the scope of this simple guide. There are number of books and a very large number of tutorials and HOWTOs for each of them available on the net, in case you need to work on something more complex.
+	</para>
 </sect1>
 <sect1 xml:id="sharing-2"><title>NFS - Linux server</title>
-</sect1>
-<sect1 xml:id="sharing-3"><title>CIFS - builtin</title>
-</sect1>
-<sect1 xml:id="sharing-4"><title>CIFS - the SAMBA server</title>
-</sect1>
-<sect1 xml:id="sharing-5"><title>Other sharing protocols</title>
 	<para>
-		FC, FCoE, iSCSI.
+		NFS is a flexible and proven network storage sharing protocol. 
+	</para>
+</sect1>
+<sect1 xml:id="sharing-3"><title>CIFS - the SAMBA server</title>
+</sect1>
+<sect1 xml:id="sharing-4"><title>Other sharing protocols</title>
+	<para>
+		You may want to share a ZFS <indexterm><primary>zvol</primary></indexterm> as an <indexterm><primary>iscsi</primary></indexterm> block device. Doing so on Linux platform is very easy. 
+	</para>
+	<para>
+		<screen>
+sudo zfs create -V 5gb data/vol01
+sudo zfs create -V 5gb data/vol02
+sudo zfs create -V 5gb data/vol03
+sudo zfs create -V 5gb data/vol04
+sudo tgtadm --lld iscsi --op new --mode target --tid 1 -T iqn.2016.temp:storage.lun01
+sudo tgtadm --lld iscsi --op new --mode target --tid 2 -T iqn.2016.temp:storage.lun02
+sudo tgtadm --lld iscsi --op new --mode target --tid 3 -T iqn.2016.temp:storage.lun03
+sudo tgtadm --lld iscsi --op new --mode target --tid 4 -T iqn.2016.temp:storage.lun04
+ll /dev/zvol/data/
+sudo tgtadm --lld iscsi --op new --mode logicalunit --tid 1 --lun 1 -b /dev/zvol/data/vol01
+sudo tgtadm --lld iscsi --op new --mode logicalunit --tid 2 --lun 1 -b /dev/zvol/data/vol02
+sudo tgtadm --lld iscsi --op new --mode logicalunit --tid 3 --lun 1 -b /dev/zvol/data/vol03
+sudo tgtadm --lld iscsi --op new --mode logicalunit --tid 4 --lun 1 -b /dev/zvol/data/vol04
+sudo tgtadm --lld iscsi --mode target --op bind --tid 1 -I ALL
+sudo tgtadm --lld iscsi --mode target --op bind --tid 2 -I ALL
+sudo tgtadm --lld iscsi --mode target --op bind --tid 3 -I ALL
+sudo tgtadm --lld iscsi --mode target --op bind --tid 4 -I ALL
+sudo tgt-admin --dump | sudo tee /etc/tgt/targets.conf
+sudo tgtadm --mode portal --op show
+sudo tgtadm --mode tgt --op show
+
+trochej@hypervizor:~$ sudo tgtadm --mode portal --op show
+Portal: [::]:3260,1
+Portal: 0.0.0.0:3260,1
+
+trochej@hypervizor:~$ sudo tgtadm --mode tgt --op show                              
+Target 1: iqn.2016.temp:storage.lun01
+	System information:
+		Driver: iscsi
+		State: ready
+	I_T nexus information:
+	LUN information:
+		LUN: 0
+			Type: controller
+			SCSI ID: IET     00010000
+			SCSI SN: beaf10
+			Size: 0 MB, Block size: 1
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: null
+			Backing store path: None
+			Backing store flags: 
+		LUN: 1
+			Type: disk
+			SCSI ID: IET     00010001
+			SCSI SN: beaf11
+			Size: 5369 MB, Block size: 512
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: rdwr
+			Backing store path: /dev/zvol/data/vol01
+			Backing store flags: 
+	Account information:
+	ACL information:
+		ALL
+Target 2: iqn.2016.temp:storage.lun02
+	System information:
+		Driver: iscsi
+		State: ready
+	I_T nexus information:
+	LUN information:
+		LUN: 0
+			Type: controller
+			SCSI ID: IET     00020000
+			SCSI SN: beaf20
+			Size: 0 MB, Block size: 1
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: null
+			Backing store path: None
+			Backing store flags: 
+		LUN: 1
+			Type: disk
+			SCSI ID: IET     00020001
+			SCSI SN: beaf21
+			Size: 5369 MB, Block size: 512
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: rdwr
+			Backing store path: /dev/zvol/data/vol02
+			Backing store flags: 
+	Account information:
+	ACL information:
+		ALL
+Target 3: iqn.2016.temp:storage.lun03
+	System information:
+		Driver: iscsi
+		State: ready
+	I_T nexus information:
+	LUN information:
+		LUN: 0
+			Type: controller
+			SCSI ID: IET     00030000
+			SCSI SN: beaf30
+			Size: 0 MB, Block size: 1
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: null
+			Backing store path: None
+			Backing store flags: 
+		LUN: 1
+			Type: disk
+			SCSI ID: IET     00030001
+			SCSI SN: beaf31
+			Size: 5369 MB, Block size: 512
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: rdwr
+			Backing store path: /dev/zvol/data/vol03
+			Backing store flags: 
+	Account information:
+	ACL information:
+		ALL
+Target 4: iqn.2016.temp:storage.lun04
+	System information:
+		Driver: iscsi
+		State: ready
+	I_T nexus information:
+	LUN information:
+		LUN: 0
+			Type: controller
+			SCSI ID: IET     00040000
+			SCSI SN: beaf40
+			Size: 0 MB, Block size: 1
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: null
+			Backing store path: None
+			Backing store flags: 
+		LUN: 1
+			Type: disk
+			SCSI ID: IET     00040001
+			SCSI SN: beaf41
+			Size: 5369 MB, Block size: 512
+			Online: Yes
+			Removable media: No
+			Prevent removal: No
+			Readonly: No
+			SWP: No
+			Thin-provisioning: No
+			Backing store type: rdwr
+			Backing store path: /dev/zvol/data/vol04
+			Backing store flags: 
+	Account information:
+	ACL information:
+		ALL
+
+root@madtower:/home/trochej# dmesg | grep sd
+[    0.000000] ACPI: SSDT 0x00000000CADE4D30 0035A5 (v01 SaSsdt SaSsdt   00003000 INTL 20091112)
+[    0.856636] sdhci: Secure Digital Host Controller Interface driver
+[    0.856638] sdhci: Copyright(c) Pierre Ossman
+[    0.884939] ahci 0000:00:1f.2: flags: 64bit ncq pm led clo only pio slum part deso sadm sds apst 
+[    1.207166] sd 0:0:0:0: [sda] 937703088 512-byte logical blocks: (480 GB/447 GiB)
+[    1.207220] sd 0:0:0:0: Attached scsi generic sg0 type 0
+[    1.207248] sd 0:0:0:0: [sda] Write Protect is off
+[    1.207253] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+[    1.207286] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    1.208604]  sda: sda1 sda3 sda9
+[    1.208990] sd 0:0:0:0: [sda] Attached SCSI disk
+[ 3705.615920] EXT4-fs (sda9): VFS: Can't find ext4 filesystem
+[ 3705.617882] EXT4-fs (sda9): VFS: Can't find ext4 filesystem
+[ 3705.619726] EXT4-fs (sda9): VFS: Can't find ext4 filesystem
+[ 3705.621765] squashfs: SQUASHFS error: Can't find a SQUASHFS superblock on sda9
+[ 3705.623686] FAT-fs (sda9): invalid media value (0x6a)
+[ 3705.623690] FAT-fs (sda9): Can't find a valid FAT filesystem
+[ 3705.629472] XFS (sda9): Invalid superblock magic number
+[ 3705.633582] FAT-fs (sda9): invalid media value (0x6a)
+[ 3705.633587] FAT-fs (sda9): Can't find a valid FAT filesystem
+[ 3705.639029] VFS: Can't find a Minix filesystem V1 | V2 | V3 on device sda9.
+			   mount -t ufs -o ufstype=sun|sunx86|44bsd|ufs2|5xbsd|old|hp|nextstep|nextstep-cd|openstep ...
+[ 3705.652946] hfs: can't find a HFS filesystem on dev sda9
+[ 3771.865617] sd 4:0:0:1: Attached scsi generic sg6 type 0
+[ 3771.866670] sd 5:0:0:1: Attached scsi generic sg7 type 0
+[ 3771.871644] sd 6:0:0:1: Attached scsi generic sg8 type 0
+[ 3771.871729] sd 7:0:0:1: Attached scsi generic sg9 type 0
+[ 3771.878840] sd 4:0:0:1: [sdb] 10485760 512-byte logical blocks: (5.37 GB/5.00 GiB)
+[ 3771.878973] sd 5:0:0:1: [sdc] 10485760 512-byte logical blocks: (5.37 GB/5.00 GiB)
+[ 3771.881518] sd 6:0:0:1: [sde] 10485760 512-byte logical blocks: (5.37 GB/5.00 GiB)
+[ 3771.881527] sd 7:0:0:1: [sdd] 10485760 512-byte logical blocks: (5.37 GB/5.00 GiB)
+[ 3771.895941] sd 4:0:0:1: [sdb] Write Protect is off
+[ 3771.895947] sd 4:0:0:1: [sdb] Mode Sense: 69 00 10 08
+[ 3771.895974] sd 5:0:0:1: [sdc] Write Protect is off
+[ 3771.895978] sd 5:0:0:1: [sdc] Mode Sense: 69 00 10 08
+[ 3771.904008] sd 6:0:0:1: [sde] Write Protect is off
+[ 3771.904016] sd 6:0:0:1: [sde] Mode Sense: 69 00 10 08
+[ 3771.904019] sd 7:0:0:1: [sdd] Write Protect is off
+[ 3771.904022] sd 7:0:0:1: [sdd] Mode Sense: 69 00 10 08
+[ 3771.906709] sd 4:0:0:1: [sdb] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[ 3771.908807] sd 5:0:0:1: [sdc] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[ 3771.912475] sd 6:0:0:1: [sde] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[ 3771.912476] sd 7:0:0:1: [sdd] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[ 3772.041014] sd 5:0:0:1: [sdc] Attached SCSI disk
+[ 3772.041016] sd 4:0:0:1: [sdb] Attached SCSI disk
+[ 3772.047183] sd 6:0:0:1: [sde] Attached SCSI disk
+[ 3772.050148] sd 7:0:0:1: [sdd] Attached SCSI disk
+
+oot@madtower:/home/trochej# zpool create -f datapool mirror /dev/sdb /dev/sdc mirror /dev/sdd /dev/sde
+root@madtower:/home/trochej# zpool list
+NAME       SIZE  ALLOC   FREE  EXPANDSZ   FRAG    CAP  DEDUP  HEALTH  ALTROOT
+datapool  9.94G  68.5K  9.94G         -     0%     0%  1.00x  ONLINE  -
+rpool      444G   133G   311G         -    29%    29%  1.00x  ONLINE  -
+
+root@madtower:/home/trochej# zpool status datapool
+  pool: datapool
+ state: ONLINE
+  scan: none requested
+config:
+
+		NAME        STATE     READ WRITE CKSUM
+		datapool    ONLINE       0     0     0
+		  mirror-0  ONLINE       0     0     0
+			sdb     ONLINE       0     0     0
+			sdc     ONLINE       0     0     0
+		  mirror-1  ONLINE       0     0     0
+			sdd     ONLINE       0     0     0
+			sde     ONLINE       0     0     0
+
+errors: No known data errors
+
+
+		</screen>
 	</para>
 </sect1>
 </chapter>
